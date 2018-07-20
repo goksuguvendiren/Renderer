@@ -22,6 +22,8 @@ namespace gpt
                                                                                                           position(point),
                                                                                                           r(ry)
         {}
+
+        float Param() const { return param; }
     };
 }
 
