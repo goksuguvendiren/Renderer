@@ -3,5 +3,7 @@ project(RayTracer)
 
 set(CMAKE_CXX_STANDARD 14)
 
-set(SOURCE_FILES src/main.cpp)
+include_directories(include)
+
+set(SOURCE_FILES src/main.cpp include/shapes/Shape.hpp include/Ray.hpp include/HitInfo.hpp include/shapes/Sphere.hpp src/shapes/Sphere.cpp)
 add_executable(RayTracer ${SOURCE_FILES})
