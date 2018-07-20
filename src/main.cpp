@@ -3,7 +3,18 @@
 #include <shapes/Triangle.hpp>
 #include <shapes/Mesh.hpp>
 
+#define CATCH_CONFIG_MAIN
+#define main ___MAIN
+#include "catch2/catch.hpp"
+#undef main
+
 int main()
+{
+    Catch::Session().run();
+}
+
+int x_main(int argc, char** argv)
+//int main()
 {
     gpt::shapes::Sphere sphere(0, 1, {0, 0, 0});
 
