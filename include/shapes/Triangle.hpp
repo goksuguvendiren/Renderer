@@ -5,10 +5,13 @@
 #ifndef RAYTRACER_TRIANGLE_HPP
 #define RAYTRACER_TRIANGLE_HPP
 
+#include <vector>
+#include <tinyxml/tinyxml2.h>
 #include "shapes/Shape.hpp"
 
 namespace gpt
 {
+    class Scene;
     namespace shapes
     {
         class Triangle : public Shape
@@ -44,6 +47,8 @@ namespace gpt
             glm::vec3 PointC() const { return pointC; }
 
             bool isArtificial() const { return false; }
+
+            static std::vector<Triangle> Load(gpt::Scene& scene, tinyxml2::XMLElement* elem);
         };
     }
 }

@@ -1,40 +1,47 @@
 #include <iostream>
+#include <string>
 #include <shapes/Sphere.hpp>
 #include <shapes/Triangle.hpp>
 #include <shapes/Mesh.hpp>
+#include <Scene.hpp>
+#include <Camera.hpp>
+
+#include <opencv2/opencv.hpp>
 
 #define CATCH_CONFIG_MAIN
 #define main ___MAIN
 #include "catch2/catch.hpp"
 #undef main
 
+//int main()
+//{
+//    Catch::Session().run();
+//}
+//
+//int x_main(int argc, char** argv)
 int main()
 {
-    Catch::Session().run();
-}
+    gpt::Scene scene;
+    scene.Load("/Users/goksu/Documents/AdvancedRayTracer/inputs/1/bunny.xml");
 
-int x_main(int argc, char** argv)
-//int main()
-{
-    gpt::shapes::Sphere sphere(0, 1, {0, 0, 0});
+//    scene.AddShape(std::make_unique<gpt::shapes::Sphere>(0, 0.3, glm::vec3{-0.875, 1, -2}));
+//    scene.AddShape(std::make_unique<gpt::shapes::Sphere>(0, 0.3, glm::vec3{-0.875, 1, -2}));
+//    scene.AddShape(std::make_unique<gpt::shapes::Sphere>(0, 0.3, glm::vec3{-0.875, 1, -2}));
 
-    gpt::shapes::Triangle triangle1(0, {-1, 1, 0}, {1, 1, 0}, {0, 2, 0});
-    gpt::shapes::Triangle triangle2(0, {-1, 2, 0}, {1, 2, 0}, {0, 3, 0});
-    gpt::shapes::Triangle triangle3(0, {-1, 0, 0}, {1, 0, 0}, {0, 1, 0});
-    gpt::shapes::Mesh m(1);
+    auto image = gpt::Render(scene);
+    cv::Mat im = cv::Mat(image.Height(), image.Width(), CV_32FC3);
 
-    m.AddFace(std::move(triangle1));
-    m.AddFace(std::move(triangle1));
-
-    gpt::Ray ray({0, 0, -5}, {0, 0, 1}, true);
-
-    if (m.Hit(ray))
-    {
-        std::cerr << "yey" << '\n';
+    for (int i = 0; i < image.Height(); i++){
+        for (int j = 0; j < image.Width(); j++){
+            // ATTENTION : OpenCV expects BGR color space
+            im.at<cv::Vec3f>(i, j)[0] = image.at(i, j).b;
+            im.at<cv::Vec3f>(i, j)[1] = image.at(i, j).g;
+            im.at<cv::Vec3f>(i, j)[2] = image.at(i, j).r;
+        }
     }
-    else
-    {
-        std::cerr << "nay" << '\n';
-    }
+
+    cv::imshow("result", im);
+    cv::waitKey();
+
     return 0;
 }

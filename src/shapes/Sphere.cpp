@@ -3,6 +3,10 @@
 //
 
 #include <shapes/Sphere.hpp>
+#include <tinyxml/tinyxml2.h>
+#include <string>
+#include <sstream>
+#include "Scene.hpp"
 
 boost::optional<gpt::HitInfo> gpt::shapes::Sphere::Hit(const Ray &ray) const
 {
@@ -39,4 +43,46 @@ boost::optional<gpt::HitInfo> gpt::shapes::Sphere::Hit(const Ray &ray) const
     }
 
     return HitInfo(surfaceNormal, hitPoint, ray, param);
+}
+
+std::vector<gpt::shapes::Sphere> gpt::shapes::Sphere::Load(gpt::Scene &scene, tinyxml2::XMLElement *elem)
+{
+    std::vector<gpt::shapes::Sphere> spheres;
+
+    for (auto child = elem->FirstChildElement("Sphere"); child != NULL; child = child->NextSiblingElement("Sphere")) {
+        int id;
+        child->QueryIntAttribute("id", &id);
+        int matID = child->FirstChildElement("Material")->IntText(0);
+        int centerID = child->FirstChildElement("Center")->IntText(0);
+        float radius = child->FirstChildElement("Radius")->FloatText(0);
+
+        glm::vec3 center = scene.GetVertex(centerID);
+
+        std::vector<std::string> transformations;
+        if(auto trns = child->FirstChildElement("Transformations"))
+        {
+            std::istringstream ss {trns->GetText()};
+            transformations = gpt::GetTransformations(ss);
+        }
+
+        glm::mat4 matrix(1.0f);
+        for (auto& tr : transformations)
+        {
+            auto m = scene.GetTransformation(tr);
+            matrix = m * matrix;
+        }
+
+        int tid = -1;
+        if (auto tex = child->FirstChildElement("Texture"))
+        {
+            tid = tex->IntText(-1);
+        }
+
+        Sphere sp {id, radius, center};
+        sp.TransformationMatrix(matrix);
+
+        spheres.push_back(std::move(sp));
+    }
+
+    return spheres;
 }
