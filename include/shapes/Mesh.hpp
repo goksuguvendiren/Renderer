@@ -40,6 +40,8 @@ namespace gpt
 
             int ID() const { return id; }
             const auto& Faces() const { return faces; }
+
+            static std::vector<gpt::shapes::Mesh> Load(gpt::Scene& scene, tinyxml2::XMLElement *elem);
         };
     }
 }

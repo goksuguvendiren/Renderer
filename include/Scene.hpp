@@ -12,6 +12,7 @@
 #include <shapes/Triangle.hpp>
 #include <shapes/Sphere.hpp>
 #include <map>
+#include <shapes/Mesh.hpp>
 #include "Camera.hpp"
 
 namespace gpt
@@ -32,7 +33,7 @@ namespace gpt
 
         std::vector<gpt::shapes::Sphere> spheres;
         std::vector<gpt::shapes::Triangle> triangles;
-//        std::vector<gpt::shapes::Mesh> meshes;
+        std::vector<gpt::shapes::Mesh> meshes;
 
         std::vector<std::unique_ptr<gpt::shapes::Shape>> shapes;
 

@@ -86,25 +86,25 @@ gpt::Image gpt::Render(/*const gpt::Camera& camera, */const gpt::Scene& scene)
 
             image.at(i, j) = RenderPixel(scene, camera, pixelLocation);
         }
-//
-//        auto progress = i / (float)camera.ImagePlane().NY();
-//
-//        auto UpdateProgress = [](float progress)
-//        {
-//            int barWidth = 70;
-//
-//            std::cout << "[";
-//            int pos = barWidth * progress;
-//            for (int i = 0; i < barWidth; ++i) {
-//                if (i < pos) std::cout << "=";
-//                else if (i == pos) std::cout << ">";
-//                else std::cout << " ";
-//            }
-//            std::cout << "] " << int(progress * 100.0) << " %\r";
-//            std::cout.flush();
-//        };
-//
-//        UpdateProgress(progress);
+
+        auto progress = i / (float)camera.ImagePlane().NY();
+
+        auto UpdateProgress = [](float progress)
+        {
+            int barWidth = 70;
+
+            std::cout << "[";
+            int pos = barWidth * progress;
+            for (int i = 0; i < barWidth; ++i) {
+                if (i < pos) std::cout << "=";
+                else if (i == pos) std::cout << ">";
+                else std::cout << " ";
+            }
+            std::cout << "] " << int(progress * 100.0) << " %\r";
+            std::cout.flush();
+        };
+
+        UpdateProgress(progress);
     }
     std::cout << std::endl;
 

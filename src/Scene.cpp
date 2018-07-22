@@ -88,6 +88,16 @@ boost::optional<gpt::HitInfo> gpt::Scene::Hit(const Ray &ray) const
         }
     }
 
+    for (auto& mesh : meshes)
+    {
+        auto hit = mesh.Hit(ray);
+        if (!hit) continue;
+        if (!min_hit || hit->Param() < min_hit->Param())
+        {
+            min_hit = *hit;
+        }
+    }
+
     return min_hit;
 }
 
@@ -190,7 +200,7 @@ void gpt::Scene::Load(const std::string& filename)
     {
         triangles     = gpt::shapes::Triangle::Load(*this, objects);
         spheres       = gpt::shapes::Sphere::Load(*this, objects);
-//        meshes        = LoadMeshes(objects);
+        meshes        = gpt::shapes::Mesh::Load(*this, objects);
 //        meshInstances = LoadMeshInstances(objects);
     }
 
