@@ -12,7 +12,7 @@
 #include <shapes/Triangle.hpp>
 #include <shapes/Sphere.hpp>
 #include <map>
-//#include "Camera.hpp"
+#include "Camera.hpp"
 
 namespace gpt
 {
@@ -27,9 +27,12 @@ namespace gpt
         float intersectionTestEpsilon;
 
         std::vector<gpt::Camera> cameras;
-//        std::vector<Vertex> vertices;
+        std::vector<glm::vec3> vertices;
         std::map<std::string, glm::mat4> transformations;
 
+        std::vector<gpt::shapes::Sphere> spheres;
+        std::vector<gpt::shapes::Triangle> triangles;
+//        std::vector<gpt::shapes::Mesh> meshes;
 
         std::vector<std::unique_ptr<gpt::shapes::Shape>> shapes;
 
@@ -50,6 +53,9 @@ namespace gpt
 
 //        void AddCamera(gpt::Camera&& cam) { cameras.push_back(std::move(cam)); }
         const gpt::Camera& GetCamera(int index) const { return cameras[index]; }
+
+        glm::vec3& GetVertex(int id) { return vertices[id - 1]; }
+        glm::mat4  GetTransformation(const std::string& str) { return transformations.find(str)->second; }
     };
 }
 

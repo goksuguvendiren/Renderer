@@ -7,6 +7,7 @@
 #include <sstream>
 #include <tinyxml/tinyxml2.h>
 #include <Camera.hpp>
+#include <Transformation.hpp>
 
 static glm::vec3 GetElem(tinyxml2::XMLElement* element)
 {
@@ -20,12 +21,66 @@ static glm::vec3 GetElem(tinyxml2::XMLElement* element)
     return color;
 }
 
+static glm::vec3 GetVertex(std::istringstream& stream)
+{
+    glm::vec3 vert;
+
+    float datax;
+    float datay;
+    float dataz;
+
+    stream >> datax;
+    stream >> datay;
+    stream >> dataz;
+
+    return glm::vec3{datax, datay, dataz};
+}
+
+std::vector<glm::vec3> LoadVertexData(tinyxml2::XMLElement *elem)
+{
+    std::istringstream stream { elem->GetText() };
+
+    std::vector<glm::vec3> verts;
+    while(stream)
+    {
+        verts.push_back(GetVertex(stream));
+    }
+
+    return verts;
+}
+//
+//boost::optional<gpt::HitInfo> gpt::Scene::Hit(const Ray &ray) const
+//{
+//    boost::optional<gpt::HitInfo> min_hit = boost::none;
+//    for (auto& shape : shapes)
+//    {
+//        auto hit = shape->Hit(ray);
+//        if (!hit) continue;
+//        if (!min_hit || hit->Param() < min_hit->Param())
+//        {
+//            min_hit = *hit;
+//        }
+//    }
+//
+//    return min_hit;
+//}
+
 boost::optional<gpt::HitInfo> gpt::Scene::Hit(const Ray &ray) const
 {
     boost::optional<gpt::HitInfo> min_hit = boost::none;
-    for (auto& shape : shapes)
+    for (auto& sphere : spheres)
     {
-        auto hit = shape->Hit(ray);
+        auto hit = sphere.Hit(ray);
+        if (!hit) continue;
+        if (!min_hit || hit->Param() < min_hit->Param())
+        {
+            min_hit = *hit;
+        }
+    }
+
+    for (auto& triangle : triangles)
+    {
+        auto hit = triangle.Hit(ray);
         if (!hit) continue;
         if (!min_hit || hit->Param() < min_hit->Param())
         {
@@ -41,7 +96,8 @@ void gpt::Scene::Load(const std::string& filename)
     tinyxml2::XMLDocument document;
     document.LoadFile(filename.c_str());
 
-    if (document.Error()){
+    if (document.Error())
+    {
         document.PrintError();
         std::abort();
     }
@@ -53,12 +109,14 @@ void gpt::Scene::Load(const std::string& filename)
         std::abort();
     }
 
-    if (auto elem = docscene->FirstChildElement("BackgroundColor")){
+    if (auto elem = docscene->FirstChildElement("BackgroundColor"))
+    {
         auto color = GetElem(elem);
         backgroundColor = color;
     }
 
-    if (auto elem = docscene->FirstChildElement("ShadowRayEpsilon")){
+    if (auto elem = docscene->FirstChildElement("ShadowRayEpsilon"))
+    {
         shadowRayEpsilon = elem->FloatText();
     }
 
@@ -66,7 +124,8 @@ void gpt::Scene::Load(const std::string& filename)
 //        maxrecdepth = (elem->IntText(1));
 //    }
 
-    if (auto elem = docscene->FirstChildElement("IntersectionTestEpsilon")){
+    if (auto elem = docscene->FirstChildElement("IntersectionTestEpsilon"))
+    {
         intersectionTestEpsilon = elem->FloatText();
     }
 
@@ -110,13 +169,15 @@ void gpt::Scene::Load(const std::string& filename)
     }
 */
 
-//    if (auto elem = docscene->FirstChildElement("VertexData")){
-//        vertices = LoadVertexData(elem, texCoords);
-//    }
-//
-//    if (auto elem = docscene->FirstChildElement("Transformations")){
-//        transformations  = LoadTransformations(elem);
-//    }
+    if (auto elem = docscene->FirstChildElement("VertexData"))
+    {
+        vertices = LoadVertexData(elem);
+    }
+
+    if (auto elem = docscene->FirstChildElement("Transformations"))
+    {
+        transformations  = gpt::LoadTransformations(elem);
+    }
 
 /*
     if (auto elem = docscene->FirstChildElement("Textures"))
@@ -124,46 +185,52 @@ void gpt::Scene::Load(const std::string& filename)
         textures = LoadTextures(elem);
     }
 */
-//
-//    if(auto objects = docscene->FirstChildElement("Objects")){
-//        triangles     = LoadTriangles(objects);
-//        spheres       = LoadSpheres(objects);
+
+    if(auto objects = docscene->FirstChildElement("Objects"))
+    {
+        triangles     = gpt::shapes::Triangle::Load(*this, objects);
+        spheres       = gpt::shapes::Sphere::Load(*this, objects);
 //        meshes        = LoadMeshes(objects);
 //        meshInstances = LoadMeshInstances(objects);
-//    }
+    }
 
 //    for (auto& mesh : meshes)
 //    {
 //        assert(mesh.GetMaterial());
 //    }
-/*
+//
+//    glm::vec3 mins, maxs;
+//
+//    std::for_each(triangles.begin(), triangles.end(), [this, &mins, &maxs](auto& tri)
+//    {
+//        Compare(tri.Max(), mins, maxs);
+//        Compare(tri.Min(), mins, maxs);
+//        shapes.push_back(&tri);
+//    });
+//
+//    std::for_each(spheres.begin(), spheres.end(), [this, &mins, &maxs](auto& sph)
+//    {
+//        Compare(tri.Max(), mins, maxs);
+//        Compare(tri.Min(), mins, maxs);
+//        shapes.push_back(&sph);
+//    });
+//
+//    std::for_each(meshes.begin(), meshes.end(), [this, &mins, &maxs](auto& msh) {
+//        Compare(msh.Max(), mins, maxs);
+//        Compare(msh.Min(), mins, maxs);
+//
+//        shapes.push_back(&msh);
+//    });
+//
+//    std::for_each(meshInstances.begin(), meshInstances.end(), [this, &mins, &maxs](auto& msh) {
+//        Compare(msh.Max(), mins, maxs);
+//        Compare(msh.Min(), mins, maxs);
+//
+//        shapes.push_back(&msh);
+//    });
+//
+//    if (shapes.size() > 0)
+//        boundingBox = BoundingVolume(shapes, Axis::X);
+//    else boundingBox = BoundingVolume();
 
-    AddCamera(camera);
-
-    glm::vec3 mins, maxs;
-
-    for_each(triangles.begin(), triangles.end(), [this, &mins, &maxs](auto& tri) {
-        Compare(tri.Max(), mins, maxs);
-        Compare(tri.Min(), mins, maxs);
-        shapes.push_back(&tri);
-    });
-
-    for_each(meshes.begin(), meshes.end(), [this, &mins, &maxs](auto& msh) {
-        Compare(msh.Max(), mins, maxs);
-        Compare(msh.Min(), mins, maxs);
-
-        shapes.push_back(&msh);
-    });
-
-    for_each(meshInstances.begin(), meshInstances.end(), [this, &mins, &maxs](auto& msh) {
-        Compare(msh.Max(), mins, maxs);
-        Compare(msh.Min(), mins, maxs);
-
-        shapes.push_back(&msh);
-    });
-
-    if (shapes.size() > 0)
-        boundingBox = BoundingVolume(shapes, Axis::X);
-    else boundingBox = BoundingVolume();
-     */
 }

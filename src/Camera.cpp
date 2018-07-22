@@ -4,40 +4,15 @@
 
 #include "Camera.hpp"
 #include "Scene.hpp"
-#include "HitInfo.hpp"
-#include <glm/glm.hpp>
 #include <iostream>
 #include <sstream>
-#include <tinyxml/tinyxml2.h>
-#include <boost/optional.hpp>
 
-glm::vec3 RenderPixel(const gpt::Scene& scene, const gpt::Camera& camera, const glm::vec3 &pixelcenter)
+glm::vec3 RenderPixel(const gpt::Scene& scene, const gpt::Camera& camera, const glm::vec3 &pixelLocation)
 {
     glm::vec3 pixelColor = {0, 0, 0};
-
-    float cellWidth  = camera.ImagePlane().PixelWidth()  / float(camera.DivCount());
-    float cellHeight = camera.ImagePlane().PixelHeight() / float(camera.DivCount());
-
-    auto oneRight = cellWidth * camera.Right();
-    auto oneDown  = -cellHeight * camera.Up();
-
-    // label the first pixel, by taking the center of the pixel to the top left
-    glm::vec3 pixelBeginning = pixelcenter - ((camera.ImagePlane().PixelWidth() / 2.f) * camera.Right());
-    pixelBeginning -= ((camera.ImagePlane().PixelHeight() / 2.f) * camera.Up());
-
-    // then add half a cell size to locate the center of the cell.
-    pixelBeginning += cellWidth / 2.f;
-    pixelBeginning += cellHeight / 2.f;
-
-    //calculate pixel location
-    int indH = camera.DivCount();
-    int indW = camera.DivCount();
-
-    glm::vec3 pixelLocation = pixelBeginning + (float(indW) * oneRight + float(indH) * oneDown);
     glm::vec3 cameraLocation = camera.Position();
 
     auto ray = gpt::Ray(cameraLocation, glm::normalize(pixelLocation - cameraLocation), true);
-
     boost::optional<gpt::HitInfo> hit = scene.Hit(ray);
 //        auto sth = *hit;
 
@@ -54,6 +29,34 @@ glm::vec3 RenderPixel(const gpt::Scene& scene, const gpt::Camera& camera, const 
     return pixelColor;
 }
 
+glm::vec3 CalculatePixelLocation(const gpt::Camera& camera, glm::vec3 pixelCenter)
+{
+    return pixelCenter;
+//    float cellWidth  = camera.ImagePlane().PixelWidth()  / float(camera.DivCount());
+//    float cellHeight = camera.ImagePlane().PixelHeight() / float(camera.DivCount());
+//
+//    auto oneRight = cellWidth * camera.Right();
+//    auto oneDown  = -cellHeight * camera.Up();
+//
+//    // label the first pixel, by taking the center of the pixel to the top left
+//    glm::vec3 pixelBeginning = pixelCenter - ((camera.ImagePlane().PixelWidth() / 2.f) * camera.Right());
+//    pixelBeginning -= ((camera.ImagePlane().PixelHeight() / 2.f) * camera.Up());
+//
+//    // then add half a cell size to locate the center of the cell.
+//    pixelBeginning += cellWidth / 2.f;
+//    pixelBeginning += cellHeight / 2.f;
+//
+//    //calculate pixel location
+//    int indH = camera.DivCount();
+//    int indW = camera.DivCount();
+//
+//    glm::vec3 pixelLocation = pixelBeginning + (float(indW) * oneRight + float(indH) * oneDown);
+//
+//    std::cerr << (pixelLocation == pixelCenter) << '\n';
+//
+//    return pixelLocation;
+}
+
 gpt::Image gpt::Render(/*const gpt::Camera& camera, */const gpt::Scene& scene)
 {
     int index = 0;
@@ -67,20 +70,21 @@ gpt::Image gpt::Render(/*const gpt::Camera& camera, */const gpt::Scene& scene)
     auto oneRight = camera.ImagePlane().PixelWidth() * camera.Right();
     auto oneDown  = -camera.ImagePlane().PixelHeight() * camera.Up();
 
-    auto pixLocation = camera.PlanePosition();
-    pixLocation -= oneRight * 0.5f;
+    auto pixLocation = camera.PlanePosition();  // the position of the top left corner of the image plane.
+    pixLocation -= oneRight * 0.5f;             // move the vector half a pixel left and up so that it will be easier in the loop.
     pixLocation -= oneDown * 0.5f;
 
-    auto rowPixLocation = pixLocation;
-    auto rowBeginning   = pixLocation;
-
-    for (int i = 0; i < camera.ImagePlane().NY(); i++){          // ny = height
+    auto rowBeginning = pixLocation;
+    for (int i = 0; i < camera.ImagePlane().NY(); i++)
+    {
         rowBeginning += oneDown;
-        rowPixLocation = rowBeginning;
-        for (int j = 0; j < camera.ImagePlane().NX(); j++){      // nx = width
-            rowPixLocation += oneRight;
+        auto pixelCenter = rowBeginning;
+        for (int j = 0; j < camera.ImagePlane().NX(); j++)
+        {
+            pixelCenter += oneRight;
+            auto pixelLocation = CalculatePixelLocation(camera, pixelCenter);
 
-            image.at(i, j) = RenderPixel(scene, camera, rowPixLocation);
+            image.at(i, j) = RenderPixel(scene, camera, pixelLocation);
         }
 //
 //        auto progress = i / (float)camera.ImagePlane().NY();

@@ -24,7 +24,9 @@ int main()
     gpt::Scene scene;
     scene.Load("/Users/goksu/Documents/AdvancedRayTracer/inputs/1/simple.xml");
 
-    scene.AddShape(std::make_unique<gpt::shapes::Sphere>(0, 0.3, glm::vec3{-0.875, 1, -2}));
+//    scene.AddShape(std::make_unique<gpt::shapes::Sphere>(0, 0.3, glm::vec3{-0.875, 1, -2}));
+//    scene.AddShape(std::make_unique<gpt::shapes::Sphere>(0, 0.3, glm::vec3{-0.875, 1, -2}));
+//    scene.AddShape(std::make_unique<gpt::shapes::Sphere>(0, 0.3, glm::vec3{-0.875, 1, -2}));
 
     auto image = gpt::Render(scene);
     cv::Mat im = cv::Mat(image.Height(), image.Width(), CV_32FC3);

@@ -9,8 +9,6 @@
 #include <string>
 #include "ImagePlane.hpp"
 #include "Image.hpp"
-//#include "Camera.hpp"
-//#include "Scene.hpp"
 
 namespace gpt
 {

@@ -8,9 +8,25 @@
 #include <glm/glm.hpp>
 #include <boost/optional.hpp>
 #include "HitInfo.hpp"
+#include <sstream>
+#include <vector>
 
 namespace gpt
 {
+    inline auto GetTransformations(std::istringstream& stream)
+    {
+        std::vector<std::string> result;
+
+        while(stream.good())
+        {
+            std::string tr;
+            stream >> tr;
+            result.push_back(tr);
+        }
+
+        return result;
+    }
+
     class Ray;
     namespace shapes
     {
