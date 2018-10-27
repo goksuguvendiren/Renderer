@@ -38,7 +38,7 @@ namespace gpt
         std::vector<std::unique_ptr<gpt::shapes::Shape>> shapes;
 
     public:
-        Scene(glm::vec3 bg = {0, 0, 0}, glm::vec3 al = {0, 0, 0})
+        Scene(const glm::vec3& bg = {0, 0, 0}, const glm::vec3& al = {0, 0, 0}) : backgroundColor(bg), ambientLight(al)
         {
             shadowRayEpsilon = 1e-3;
             intersectionTestEpsilon = 1e-6;
