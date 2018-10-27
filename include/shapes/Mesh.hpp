@@ -24,7 +24,7 @@ namespace gpt
 
         public:
 
-            Mesh(int mid = 1) : id(mid) {}
+            Mesh(int mid = 1, const gpt::materials::Material* m = nullptr) : id(mid), Shape(m) {}
             Mesh(const Mesh& m) = delete;
             Mesh(Mesh&& m) = default;
 

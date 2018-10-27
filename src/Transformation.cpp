@@ -55,7 +55,7 @@ std::map<std::string, glm::mat4> gpt::LoadTransformations(tinyxml2::XMLElement *
 std::map<std::string, glm::mat4> gpt::LoadTranslations(tinyxml2::XMLElement *elem)
 {
     std::map<std::string, glm::mat4> trs;
-    for (auto child = elem->FirstChildElement("Translation"); child != NULL; child = child->NextSiblingElement()){
+    for (auto child = elem->FirstChildElement("Translation"); child != nullptr; child = child->NextSiblingElement()){
         int id;
         child->QueryIntAttribute("id", &id);
 
@@ -74,7 +74,7 @@ std::map<std::string, glm::mat4> gpt::LoadTranslations(tinyxml2::XMLElement *ele
 std::map<std::string, glm::mat4> gpt::LoadRotations(tinyxml2::XMLElement *elem)
 {
     std::map<std::string, glm::mat4> rts;
-    for (auto child = elem->FirstChildElement("Rotation"); child != NULL; child = child->NextSiblingElement()){
+    for (auto child = elem->FirstChildElement("Rotation"); child != nullptr; child = child->NextSiblingElement()){
         int id;
         child->QueryIntAttribute("id", &id);
 
@@ -94,7 +94,7 @@ std::map<std::string, glm::mat4> gpt::LoadRotations(tinyxml2::XMLElement *elem)
 std::map<std::string, glm::mat4> gpt::LoadScalings(tinyxml2::XMLElement *elem)
 {
     std::map<std::string, glm::mat4> scls;
-    for (auto child = elem->FirstChildElement("Scaling"); child != NULL; child = child->NextSiblingElement()){
+    for (auto child = elem->FirstChildElement("Scaling"); child != nullptr; child = child->NextSiblingElement()){
         int id;
         child->QueryIntAttribute("id", &id);
 

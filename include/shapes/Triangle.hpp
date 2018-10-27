@@ -26,7 +26,7 @@ namespace gpt
 
         public:
             Triangle() = default;
-            Triangle(int id, glm::vec3 a, glm::vec3 b, glm::vec3 c, int tid = -1, int tr_id = 1);
+            Triangle(int id, glm::vec3 a, glm::vec3 b, glm::vec3 c, const gpt::materials::Material* m, int tid = -1, int tr_id = 1);
 
             Triangle(const glm::vec3 &pointA);
 

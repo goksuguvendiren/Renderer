@@ -12,18 +12,19 @@ glm::vec3 RenderPixel(const gpt::Scene& scene, const gpt::Camera& camera, const 
     glm::vec3 pixelColor = {0, 0, 0};
     glm::vec3 cameraLocation = camera.Position();
 
-    auto ray = gpt::Ray(cameraLocation, glm::normalize(pixelLocation - cameraLocation), true);
+    auto ray = gpt::Ray(cameraLocation, pixelLocation - cameraLocation, true);
     boost::optional<gpt::HitInfo> hit = scene.Hit(ray);
 //        auto sth = *hit;
 
     if (hit)
     {
-        glm::vec3 col = {255, 230, 234};//CalculateMaterialReflectances(*hit, 0);
-        pixelColor += glm::min(col, glm::vec3{500.f, 500.f, 500.f});
+        glm::vec3 col = hit->Material()->CalculateReflectance(scene); //{255, 230, 234};//CalculateMaterialReflectances(*hit, 0);
+//        glm::vec3 col = glm::abs(hit->Normal());//{255, 230, 234};//CalculateMaterialReflectances(*hit, 0);
+        pixelColor += glm::min(col, glm::vec3{255.f, 255.f, 255.f}) / 255.f;
     }
     else
     {
-        pixelColor += glm::vec3{0, 0, 0};//scene.BackgroundColor();
+        pixelColor += scene.BackgroundColor();
     }
 
     return pixelColor;
@@ -32,38 +33,28 @@ glm::vec3 RenderPixel(const gpt::Scene& scene, const gpt::Camera& camera, const 
 glm::vec3 CalculatePixelLocation(const gpt::Camera& camera, glm::vec3 pixelCenter)
 {
     return pixelCenter;
-//    float cellWidth  = camera.ImagePlane().PixelWidth()  / float(camera.DivCount());
-//    float cellHeight = camera.ImagePlane().PixelHeight() / float(camera.DivCount());
-//
-//    auto oneRight = cellWidth * camera.Right();
-//    auto oneDown  = -cellHeight * camera.Up();
-//
-//    // label the first pixel, by taking the center of the pixel to the top left
-//    glm::vec3 pixelBeginning = pixelCenter - ((camera.ImagePlane().PixelWidth() / 2.f) * camera.Right());
-//    pixelBeginning -= ((camera.ImagePlane().PixelHeight() / 2.f) * camera.Up());
-//
-//    // then add half a cell size to locate the center of the cell.
-//    pixelBeginning += cellWidth / 2.f;
-//    pixelBeginning += cellHeight / 2.f;
-//
-//    //calculate pixel location
-//    int indH = camera.DivCount();
-//    int indW = camera.DivCount();
-//
-//    glm::vec3 pixelLocation = pixelBeginning + (float(indW) * oneRight + float(indH) * oneDown);
-//
-//    std::cerr << (pixelLocation == pixelCenter) << '\n';
-//
-//    return pixelLocation;
 }
+
+void UpdateProgress(float progress)
+{
+    int barWidth = 70;
+
+    std::cout << "[";
+    int pos = barWidth * progress;
+    for (int i = 0; i < barWidth; ++i) {
+        if (i < pos) std::cout << "=";
+        else if (i == pos) std::cout << ">";
+        else std::cout << " ";
+    }
+    std::cout << "] " << int(progress * 100.0) << " %\r";
+    std::cout.flush();
+};
 
 gpt::Image gpt::Render(/*const gpt::Camera& camera, */const gpt::Scene& scene)
 {
     int index = 0;
     auto& camera = scene.GetCamera(index);
     gpt::Image image(camera.ImagePlane().NX(), camera.ImagePlane().NY());
-
-//    auto grsamples = samples;
 
     std::cerr << "Rendering with " << camera.SampleCount() << " samples for pixels." << '\n';
 
@@ -87,26 +78,8 @@ gpt::Image gpt::Render(/*const gpt::Camera& camera, */const gpt::Scene& scene)
             image.at(i, j) = RenderPixel(scene, camera, pixelLocation);
         }
 
-        auto progress = i / (float)camera.ImagePlane().NY();
-
-        auto UpdateProgress = [](float progress)
-        {
-            int barWidth = 70;
-
-            std::cout << "[";
-            int pos = barWidth * progress;
-            for (int i = 0; i < barWidth; ++i) {
-                if (i < pos) std::cout << "=";
-                else if (i == pos) std::cout << ">";
-                else std::cout << " ";
-            }
-            std::cout << "] " << int(progress * 100.0) << " %\r";
-            std::cout.flush();
-        };
-
-        UpdateProgress(progress);
+        UpdateProgress(i / (float)camera.ImagePlane().NY());
     }
-    std::cout << std::endl;
 
     return image;
 }

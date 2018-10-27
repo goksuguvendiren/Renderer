@@ -61,7 +61,8 @@ boost::optional<gpt::shapes::Triangle> GetFace(gpt::Scene& scene, std::istringst
     return gpt::shapes::Triangle(index,
                                  {ind0.x, ind0.y, ind0.z},
                                  {ind1.x, ind1.y, ind1.z},
-                                 {ind2.x, ind2.y, ind2.z});
+                                 {ind2.x, ind2.y, ind2.z},
+                                 scene.GetMaterial(matID));
 //    }
 //    else
 //    {
@@ -104,7 +105,7 @@ std::vector<gpt::shapes::Mesh> gpt::shapes::Mesh::Load(gpt::Scene& scene, tinyxm
             matrix = m * matrix;
         }
 
-        Mesh msh {id/*, scene.GetMaterial(matID)*/};
+        Mesh msh {id, scene.GetMaterial(matID)};
         auto FaceData = child->FirstChildElement("Faces");
         std::istringstream stream { FaceData->GetText() };
         int vertexOffset = 0;

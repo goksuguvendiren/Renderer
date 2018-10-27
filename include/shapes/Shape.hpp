@@ -28,16 +28,27 @@ namespace gpt
     }
 
     class Ray;
+
+    namespace materials
+    {
+        class Material;
+    }
+
     namespace shapes
     {
         class Shape
         {
+            const gpt::materials::Material* material;
+
         public:
+            explicit Shape(const gpt::materials::Material* m) : material(m) {}
             virtual ~Shape() = default;
             virtual boost::optional<HitInfo> Hit(const Ray &ray) const = 0;
 //            virtual boost::optional<float> ShadowHit(const Ray &ray) const = 0;
 
             virtual int ID() const = 0;
+
+            const gpt::materials::Material* Material() const { return material; }
 //            virtual bool isArtificial() const = 0;
 
 //            virtual glm::vec3 Min() const = 0;

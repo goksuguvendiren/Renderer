@@ -42,19 +42,19 @@ boost::optional<gpt::HitInfo> gpt::shapes::Sphere::Hit(const Ray &ray) const
         return boost::none;
     }
 
-    return HitInfo(surfaceNormal, hitPoint, ray, param);
+    return HitInfo(surfaceNormal, hitPoint, ray, this, param);
 }
 
 std::vector<gpt::shapes::Sphere> gpt::shapes::Sphere::Load(gpt::Scene &scene, tinyxml2::XMLElement *elem)
 {
     std::vector<gpt::shapes::Sphere> spheres;
 
-    for (auto child = elem->FirstChildElement("Sphere"); child != NULL; child = child->NextSiblingElement("Sphere")) {
+    for (auto child = elem->FirstChildElement("Sphere"); child != nullptr; child = child->NextSiblingElement("Sphere")) {
         int id;
         child->QueryIntAttribute("id", &id);
-        int matID = child->FirstChildElement("Material")->IntText(0);
-        int centerID = child->FirstChildElement("Center")->IntText(0);
-        float radius = child->FirstChildElement("Radius")->FloatText(0);
+        int materialID  = child->FirstChildElement("Material")->IntText(0);
+        int centerID    = child->FirstChildElement("Center")->IntText(0);
+        float radius    = child->FirstChildElement("Radius")->FloatText(0);
 
         glm::vec3 center = scene.GetVertex(centerID);
 
@@ -78,7 +78,7 @@ std::vector<gpt::shapes::Sphere> gpt::shapes::Sphere::Load(gpt::Scene &scene, ti
             tid = tex->IntText(-1);
         }
 
-        Sphere sp {id, radius, center};
+        Sphere sp {id, radius, center, scene.GetMaterial(materialID)};
         sp.TransformationMatrix(matrix);
 
         spheres.push_back(std::move(sp));

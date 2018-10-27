@@ -8,6 +8,7 @@
 #include <tinyxml/tinyxml2.h>
 #include <Camera.hpp>
 #include <Transformation.hpp>
+#include <materials/Material.hpp>
 
 static glm::vec3 GetElem(tinyxml2::XMLElement* element)
 {
@@ -130,13 +131,20 @@ void gpt::Scene::Load(const std::string& filename)
         shadowRayEpsilon = elem->FloatText();
     }
 
-//    if (auto elem = docscene->FirstChildElement("MaxRecursionDepth")){
-//        maxrecdepth = (elem->IntText(1));
-//    }
+    if (auto elem = docscene->FirstChildElement("MaxRecursionDepth"))
+    {
+        maxRecursionDepth = (elem->IntText(1));
+    }
 
     if (auto elem = docscene->FirstChildElement("IntersectionTestEpsilon"))
     {
         intersectionTestEpsilon = elem->FloatText();
+    }
+
+    if (auto elem = docscene->FirstChildElement("AmbientLight"))
+    {
+        auto color = GetElem(elem);
+        ambientLight = color;
     }
 
     gpt::Camera camera;
@@ -167,13 +175,6 @@ void gpt::Scene::Load(const std::string& filename)
         brdfs = LoadBRDFs(elem);
     }
 
-    if (auto elem = docscene->FirstChildElement("Materials")){
-        for (auto mat : LoadMaterials(elem))
-        {
-            AddMaterial(mat);
-        }
-    }
-
     if (auto elem = docscene->FirstChildElement("TexCoordData")){
         texCoords = LoadTexCoordData(elem);
     }
@@ -195,6 +196,11 @@ void gpt::Scene::Load(const std::string& filename)
         textures = LoadTextures(elem);
     }
 */
+
+    if (auto elem = docscene->FirstChildElement("Materials"))
+    {
+        materials = std::move(gpt::materials::Material::Load(*this, elem));
+    }
 
     if(auto objects = docscene->FirstChildElement("Objects"))
     {

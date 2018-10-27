@@ -7,13 +7,16 @@
 
 #include <glm/vec3.hpp>
 #include <string>
-#include <shapes/Shape.hpp>
 #include <vector>
+#include <map>
+
+#include <shapes/Shape.hpp>
 #include <shapes/Triangle.hpp>
 #include <shapes/Sphere.hpp>
-#include <map>
 #include <shapes/Mesh.hpp>
-#include "Camera.hpp"
+#include <Camera.hpp>
+
+#include <materials/Material.hpp>
 
 namespace gpt
 {
@@ -26,6 +29,7 @@ namespace gpt
         glm::vec3 ambientLight;
         float shadowRayEpsilon;
         float intersectionTestEpsilon;
+        float maxRecursionDepth;
 
         std::vector<gpt::Camera> cameras;
         std::vector<glm::vec3> vertices;
@@ -36,6 +40,8 @@ namespace gpt
         std::vector<gpt::shapes::Mesh> meshes;
 
         std::vector<std::unique_ptr<gpt::shapes::Shape>> shapes;
+
+        std::map<int, gpt::materials::Material> materials;
 
     public:
         Scene(const glm::vec3& bg = {0, 0, 0}, const glm::vec3& al = {0, 0, 0}) : backgroundColor(bg), ambientLight(al)
@@ -54,9 +60,13 @@ namespace gpt
 
 //        void AddCamera(gpt::Camera&& cam) { cameras.push_back(std::move(cam)); }
         const gpt::Camera& GetCamera(int index) const { return cameras[index]; }
+        const gpt::materials::Material* GetMaterial(int id) const { return &materials.find(id)->second; }
 
         glm::vec3& GetVertex(int id) { return vertices[id - 1]; }
         glm::mat4  GetTransformation(const std::string& str) { return transformations.find(str)->second; }
+
+        glm::vec3 BackgroundColor() const { return backgroundColor; }
+        glm::vec3 AmbientColor() const { return ambientLight; }
     };
 }
 

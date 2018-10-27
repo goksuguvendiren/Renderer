@@ -37,10 +37,10 @@ boost::optional<gpt::HitInfo> gpt::shapes::Triangle::Hit (const gpt::Ray& ray) c
 
     glm::vec3 normal = glm::normalize(alpha * surfNormal + beta * surfNormal + gamma * surfNormal);
 
-    return gpt::HitInfo(normal, point, ray, param);
+    return gpt::HitInfo(normal, point, ray, this, param);
 }
 
-gpt::shapes::Triangle::Triangle(int i, glm::vec3 a, glm::vec3 b, glm::vec3 c, int tid, int tr_id)
+gpt::shapes::Triangle::Triangle(int i, glm::vec3 a, glm::vec3 b, glm::vec3 c, const gpt::materials::Material* m, int tid, int tr_id) : Shape(m)
 {
     id = i;
     pointA = a;
@@ -61,7 +61,7 @@ std::vector<gpt::shapes::Triangle> gpt::shapes::Triangle::Load(gpt::Scene& scene
 {
     std::vector<Triangle> tris;
 
-    for (auto child = elem->FirstChildElement("Triangle"); child != NULL; child = child->NextSiblingElement("Triangle")) {
+    for (auto child = elem->FirstChildElement("Triangle"); child != nullptr; child = child->NextSiblingElement("Triangle")) {
         int id;
         child->QueryIntAttribute("id", &id);
         int matID = child->FirstChildElement("Material")->IntText(0);
@@ -101,10 +101,11 @@ std::vector<gpt::shapes::Triangle> gpt::shapes::Triangle::Load(gpt::Scene& scene
 
 //        if (texID != -1 && !scene.GetTexture(texID).IsPerlin())
 //        {
-            tris.emplace_back(gpt::shapes::Triangle(id,
-                              {ind0.x, ind0.y, ind0.z},
-                              {ind1.x, ind1.y, ind1.z},
-                              {ind2.x, ind2.y, ind2.z}));
+        tris.emplace_back(gpt::shapes::Triangle(id,
+                          {ind0.x, ind0.y, ind0.z},
+                          {ind1.x, ind1.y, ind1.z},
+                          {ind2.x, ind2.y, ind2.z},
+                          scene.GetMaterial(matID)));
 //        }
 //        else
 //        {

@@ -2,13 +2,22 @@
 // Created by Göksu Güvendiren on 20/07/2018.
 //
 
-#ifndef RAYTRACER_HITINFO_HPP
-#define RAYTRACER_HITINFO_HPP
+#pragma once
 
-#include "Ray.hpp"
+#include <Ray.hpp>
 
 namespace gpt
 {
+    namespace shapes
+    {
+        class Shape;
+    }
+
+    namespace materials
+    {
+        class Material;
+    }
+
     class HitInfo
     {
         float param;
@@ -16,15 +25,20 @@ namespace gpt
         glm::vec3 position;
         Ray r;
 
+        const gpt::shapes::Shape* shape;
     public:
-        HitInfo(glm::vec3 n, glm::vec3 point, Ray ry, float t = std::numeric_limits<float>::infinity()) : param(t),
+        HitInfo(glm::vec3 n, glm::vec3 point, Ray ry, const gpt::shapes::Shape* hitShape, float t = std::numeric_limits<float>::infinity()) : param(t),
                                                                                                           normal(n),
                                                                                                           position(point),
-                                                                                                          r(ry)
+                                                                                                          r(ry),
+                                                                                                          shape(hitShape)
         {}
 
-        float Param() const { return param; }
+        float       Param() const { return param; }
+        glm::vec3   Normal() const { return normal; }
+
+        const gpt::shapes::Shape* Shape() const { return shape; }
+        const gpt::materials::Material*  Material() const;
     };
 }
 
-#endif //RAYTRACER_HITINFO_HPP
