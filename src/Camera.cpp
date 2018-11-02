@@ -9,23 +9,47 @@
 
 #include "Utils.hpp"
 
+glm::vec3 Trace(const gpt::Scene& scene, glm::vec3 origin, glm::vec3 direction, bool primary, int recursionDepth, int maxRecDepth)
+{
+    glm::vec3 color = {0, 0, 0};
+
+    auto ray = gpt::Ray(origin, direction, primary);
+    boost::optional<gpt::HitInfo> hit = scene.Hit(ray);
+
+    if (hit)
+    {
+        color = hit->Material().CalculateReflectance(scene, *hit, 1);
+    }
+    else
+    {
+        color = scene.BackgroundColor();
+    }
+
+
+    if (recursionDepth >= maxRecDepth) return color;
+
+    // otherwise, redirect the ray :
+//    auto direction = sample_hemisphere(hit.Normal());
+//    return color + Trace(hit->Position() + (scene.ShadowRayEpsilon() * direction), direction, false, recursionDepth--, maxRecDepth)
+    return color;
+}
+
+
 glm::vec3 RenderPixel(const gpt::Scene& scene, const gpt::Camera& camera, const glm::vec3 &pixelLocation)
 {
     glm::vec3 pixelColor = {0, 0, 0};
     glm::vec3 cameraLocation = camera.Position();
 
-    auto ray = gpt::Ray(cameraLocation, pixelLocation - cameraLocation, true);
-    boost::optional<gpt::HitInfo> hit = scene.Hit(ray);
-
-    if (hit)
+//    if (hit)
     {
-        glm::vec3 col = hit->Material().CalculateReflectance(scene, *hit, 1); //{255, 230, 234};//CalculateMaterialReflectances(*hit, 0);
+        glm::vec3 col = Trace(scene, cameraLocation, pixelLocation - cameraLocation, true, 1, 1);
+                //hit->Material().CalculateReflectance(scene, *hit, 1); //{255, 230, 234};//CalculateMaterialReflectances(*hit, 0);
         pixelColor += glm::min(col, glm::vec3{255.f, 255.f, 255.f}) / 255.f;
     }
-    else
-    {
-        pixelColor += scene.BackgroundColor();
-    }
+//    else
+//    {
+//        pixelColor += scene.BackgroundColor();
+//    }
 
     return pixelColor;
 }
