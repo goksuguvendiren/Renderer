@@ -3,8 +3,3 @@
 //
 
 #include <lights/PointLight.hpp>
-
-glm::vec3 gpt::lights::PointLight::Direction(const glm::vec3 &hitpos) const
-{
-    return position - hitpos;
-}

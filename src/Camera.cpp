@@ -29,13 +29,13 @@ glm::vec3 sample_hemisphere(const glm::vec3& normal)
     auto angle = glm::acos(glm::dot(glm::vec3{0, 1, 0}, normal));
     auto res = glm::angleAxis(angle, c) * glm::normalize(dir);
 
-//    const float r = std::sqrt(sample1);
-//    const float theta = 2 * glm::pi<float>() * sample2;
-//
-//    const float x = r * std::cos(theta);
-//    const float y = r * std::sin(theta);
-//
-//    return glm::vec3(x, y, std::sqrt(std::max(0.0f, 1 - sample1)));
+    const float r = std::sqrt(sample1);
+    const float theta = 2 * glm::pi<float>() * sample2;
+
+    const float x = r * std::cos(theta);
+    const float y = r * std::sin(theta);
+
+    return glm::vec3(x, y, std::sqrt(std::max(0.0f, 1 - sample1)));
 
     if (normal == glm::vec3{0, -1, 0})
     {
@@ -116,7 +116,7 @@ gpt::Image gpt::Render(/*const gpt::Camera& camera, */const gpt::Scene& scene)
             auto pixelLocation = CalculatePixelLocation(camera, pixelCenter);
 
             auto ray = gpt::Ray(camera.Position(), pixelLocation - camera.Position(), true);
-            auto color = Trace(scene, ray, 1, 5);
+            auto color = Trace(scene, ray, 1, 1);
 
             image.at(i, j) = glm::min(color, glm::vec3{255.f, 255.f, 255.f}) / 255.f;
         }
