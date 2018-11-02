@@ -40,7 +40,7 @@ boost::optional<gpt::HitInfo> gpt::shapes::Triangle::Hit (const gpt::Ray& ray) c
     return gpt::HitInfo(normal, point, ray, this, param);
 }
 
-gpt::shapes::Triangle::Triangle(int i, glm::vec3 a, glm::vec3 b, glm::vec3 c, const gpt::materials::Material* m, int tid, int tr_id) : Shape(m)
+gpt::shapes::Triangle::Triangle(int i, glm::vec3 a, glm::vec3 b, glm::vec3 c, const gpt::Material& m, int tid, int tr_id) : Shape(m)
 {
     id = i;
     pointA = a;

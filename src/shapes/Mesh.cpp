@@ -4,6 +4,7 @@
 
 #include <shapes/Mesh.hpp>
 #include "Scene.hpp"
+#include "Utils.hpp"
 
 boost::optional<gpt::HitInfo> gpt::shapes::Mesh::Hit(const Ray &ray) const
 {
@@ -22,7 +23,7 @@ boost::optional<gpt::HitInfo> gpt::shapes::Mesh::Hit(const Ray &ray) const
 }
 
 boost::optional<gpt::shapes::Triangle> GetFace(gpt::Scene& scene, std::istringstream& stream, int vertexOffset, int texCoordsOffset,
-                                         const glm::mat4& matrix, int matID, int index, int texID)
+                                         const glm::mat4& matrix, int matID, int index, int texID = -1)
 {
     int x, y, z;
 
@@ -77,7 +78,8 @@ std::vector<gpt::shapes::Mesh> gpt::shapes::Mesh::Load(gpt::Scene& scene, tinyxm
 {
     std::vector<gpt::shapes::Mesh> meshes;
 
-    for (auto child = elem->FirstChildElement("Mesh"); child != nullptr; child = child->NextSiblingElement("Mesh")) {
+    for (auto child = elem->FirstChildElement("Mesh"); child != nullptr; child = child->NextSiblingElement("Mesh"))
+    {
         int id;
         child->QueryIntAttribute("id", &id);
 
@@ -105,7 +107,7 @@ std::vector<gpt::shapes::Mesh> gpt::shapes::Mesh::Load(gpt::Scene& scene, tinyxm
             matrix = m * matrix;
         }
 
-        Mesh msh {id, scene.GetMaterial(matID)};
+        Mesh msh{scene.GetMaterial(matID)};
         auto FaceData = child->FirstChildElement("Faces");
         std::istringstream stream { FaceData->GetText() };
         int vertexOffset = 0;
@@ -119,35 +121,17 @@ std::vector<gpt::shapes::Mesh> gpt::shapes::Mesh::Load(gpt::Scene& scene, tinyxm
         boost::optional<Triangle> tr;
         int index = 1;
 
-//        gpt::shapes::ShadingMode mode = gpt::shapes::ShadingMode::Flat;
-//        const char* asd = child->Attribute("shadingMode");
-//        if (asd)
-//        {
-//            std::string sm = std::string(asd);
-//            if (sm == "smooth")
-//            {
-//                mode = gpt::shapes::ShadingMode::Smooth;
-//            }
-//        }
-
-        while((tr = GetFace(scene, stream, vertexOffset, texCoordOffset, matrix, matID, index++, texID))){
+        while((tr = GetFace(scene, stream, vertexOffset, texCoordOffset, matrix, matID, index++, texID)))
+        {
             auto tri = *tr;
             msh.AddFace(std::move(*tr));
         }
-
 //        msh.SetShadingMode(mode);
 //        msh.SetArtificial(is_art);
 
 //        msh.BoundingBox();
         meshes.push_back(std::move(msh));
-
     }
-
-
-//    for (auto& mesh : meshes)
-//    {
-//        assert(mesh.GetMaterial());
-//    }
 
     return meshes;
 }

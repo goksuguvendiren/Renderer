@@ -2,9 +2,7 @@
 // Created by Göksu Güvendiren on 20/07/2018.
 //
 
-#ifndef RAYTRACER_RAY_HPP
-#define RAYTRACER_RAY_HPP
-
+#pragma once
 #include <glm/glm.hpp>
 
 namespace gpt
@@ -31,5 +29,3 @@ namespace gpt
         bool IsPrimary() const { return is_primary; }
     };
 }
-
-#endif //RAYTRACER_RAY_HPP

@@ -2,8 +2,7 @@
 // Created by Göksu Güvendiren on 20/07/2018.
 //
 
-#ifndef RAYTRACER_MESH_HPP
-#define RAYTRACER_MESH_HPP
+#pragma once
 
 #include <vector>
 #include <map>
@@ -16,15 +15,12 @@ namespace gpt
     {
         class Mesh : public Shape
         {
-            int id;
-//            ShadingMode shmode;
-
             std::vector<gpt::shapes::Triangle> faces;
             std::multimap<int, int> vertex_triangle_associtations;
 
         public:
 
-            Mesh(int mid = 1, const gpt::materials::Material* m = nullptr) : id(mid), Shape(m) {}
+            Mesh(const gpt::Material& m) : Shape(m) {}
             Mesh(const Mesh& m) = delete;
             Mesh(Mesh&& m) = default;
 
@@ -33,17 +29,12 @@ namespace gpt
                 faces.push_back(std::move(face));
             }
 
-//            void InsertVT(Triangle face);
-
             boost::optional<HitInfo> Hit(const Ray &ray) const;
-            boost::optional<float>   ShadowHit(const Ray& ray) const;
+//            boost::optional<float>   ShadowHit(const Ray& ray) const;
 
-            int ID() const { return id; }
             const auto& Faces() const { return faces; }
 
             static std::vector<gpt::shapes::Mesh> Load(gpt::Scene& scene, tinyxml2::XMLElement *elem);
         };
     }
 }
-
-#endif //RAYTRACER_MESH_HPP

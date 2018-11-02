@@ -7,6 +7,8 @@
 #include <iostream>
 #include <sstream>
 
+#include "Utils.hpp"
+
 glm::vec3 RenderPixel(const gpt::Scene& scene, const gpt::Camera& camera, const glm::vec3 &pixelLocation)
 {
     glm::vec3 pixelColor = {0, 0, 0};
@@ -14,12 +16,10 @@ glm::vec3 RenderPixel(const gpt::Scene& scene, const gpt::Camera& camera, const 
 
     auto ray = gpt::Ray(cameraLocation, pixelLocation - cameraLocation, true);
     boost::optional<gpt::HitInfo> hit = scene.Hit(ray);
-//        auto sth = *hit;
 
     if (hit)
     {
-        glm::vec3 col = hit->Material()->CalculateReflectance(scene); //{255, 230, 234};//CalculateMaterialReflectances(*hit, 0);
-//        glm::vec3 col = glm::abs(hit->Normal());//{255, 230, 234};//CalculateMaterialReflectances(*hit, 0);
+        glm::vec3 col = hit->Material().CalculateReflectance(scene, *hit, 1); //{255, 230, 234};//CalculateMaterialReflectances(*hit, 0);
         pixelColor += glm::min(col, glm::vec3{255.f, 255.f, 255.f}) / 255.f;
     }
     else
@@ -92,21 +92,9 @@ gpt::Camera gpt::LoadCamera(tinyxml2::XMLElement *element)
         std::abort();
     }
 
-    auto GetElem = [](tinyxml2::XMLElement* element)
-    {
-        glm::vec3 color;
-
-        std::istringstream ss {element->GetText()};
-        ss >> color.r;
-        ss >> color.g;
-        ss >> color.b;
-
-        return color;
-    };
-
-    glm::vec3 position = GetElem(element->FirstChildElement("Position"));
-    glm::vec3 gaze = GetElem(element->FirstChildElement("Gaze"));
-    glm::vec3 up = GetElem(element->FirstChildElement("Up"));
+    glm::vec3 position = utils::GetElem(element->FirstChildElement("Position"));
+    glm::vec3 gaze = utils::GetElem(element->FirstChildElement("Gaze"));
+    glm::vec3 up = utils::GetElem(element->FirstChildElement("Up"));
 
     tinyxml2::XMLElement* elem;
     int sampleCount = 1;

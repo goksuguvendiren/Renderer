@@ -13,10 +13,7 @@ namespace gpt
         class Shape;
     }
 
-    namespace materials
-    {
-        class Material;
-    }
+    class Material;
 
     class HitInfo
     {
@@ -36,9 +33,10 @@ namespace gpt
 
         float       Param() const { return param; }
         glm::vec3   Normal() const { return normal; }
+        glm::vec3   Position() const { return position; }
 
         const gpt::shapes::Shape* Shape() const { return shape; }
-        const gpt::materials::Material*  Material() const;
+        const gpt::Material&  Material() const;
     };
 }
 

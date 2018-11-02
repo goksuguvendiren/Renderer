@@ -2,8 +2,7 @@
 // Created by Göksu Güvendiren on 21/07/2018.
 //
 
-#ifndef RAYTRACER_CAMERA_HPP
-#define RAYTRACER_CAMERA_HPP
+#pragma once
 
 #include <glm/glm.hpp>
 #include <string>
@@ -77,5 +76,3 @@ namespace gpt
         void SetSampleCount(int numsamp) { sampleCount = numsamp; }
     };
 }
-
-#endif //RAYTRACER_CAMERA_HPP

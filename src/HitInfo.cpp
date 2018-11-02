@@ -5,7 +5,7 @@
 #include <shapes/Shape.hpp>
 #include <HitInfo.hpp>
 
-const gpt::materials::Material* gpt::HitInfo::Material() const
+const gpt::Material& gpt::HitInfo::Material() const
 {
      return shape->Material();
 }
