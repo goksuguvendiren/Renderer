@@ -33,29 +33,9 @@ namespace gpt
             BasicMaterial() : ambient({0, 0, 0}), diffuse({0, 0, 0}), specular({0, 0, 0}) {}
             BasicMaterial(const glm::vec3 &amb, const glm::vec3 &dif, const glm::vec3 &spe) : ambient(amb), diffuse(dif), specular(spe)
             {}
+            ~BasicMaterial() override = default;
 
-            glm::vec3 CalculateReflectance(const Scene &scene, const gpt::HitInfo& hit, int recdepth) const override
-            {
-                glm::vec3 color = ambient * scene.AmbientColor();
-
-                for (auto& light : scene.Lights())
-                {
-                    auto direction = light->Direction(hit.Position());
-                    gpt::Ray shadowRay(hit.Position() + (scene.ShadowRayEpsilon() * glm::normalize(direction)), glm::normalize(direction));
-
-        //          boost::optional<float> sh;
-        //          if ((sh = scene.ShadowHit(shadowRay)))
-        //          {
-        //                if (*sh < glm::length(direction))
-        //                continue;
-        //          }
-
-        //          color += ComputeReflectance(hit, *light);
-                }
-
-                return color;
-
-            }
+            glm::vec3 CalculateReflectance(const Scene &scene, const gpt::HitInfo& hit, int recdepth) const override;
         };
     }
 }

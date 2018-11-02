@@ -21,8 +21,8 @@ namespace gpt
 
     class Material
     {
-
     public:
         virtual glm::vec3 CalculateReflectance(const Scene &scene, const gpt::HitInfo& hit, int recdepth) const = 0;
+        virtual ~Material() = default;
     };
 }
