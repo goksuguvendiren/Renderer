@@ -46,8 +46,6 @@ namespace gpt
             glm::vec3 PointC() const { return pointC; }
 
             bool isArtificial() const { return false; }
-
-            static std::vector<Triangle> Load(gpt::Scene& scene, tinyxml2::XMLElement* elem);
         };
     }
 }

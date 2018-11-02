@@ -43,8 +43,6 @@ namespace gpt
             boost::optional<HitInfo> Hit(const Ray &r) const;
 //            boost::optional<float>   ShadowHit(const Ray& ray) const;
             int ID() const { return id; }
-
-            static std::vector<Sphere> Load(gpt::Scene& scene, tinyxml2::XMLElement *elem);
         };
     }
 }

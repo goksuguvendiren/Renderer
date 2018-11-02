@@ -15,6 +15,7 @@
 #include <lights/Light.hpp>
 #include <materials/EmittingMaterial.hpp>
 #include <materials/BasicMaterial.hpp>
+#include <lights/PointLight.hpp>
 #include "Utils.hpp"
 
 using namespace gpt;
@@ -143,12 +144,9 @@ namespace
                 transformations = gpt::utils::GetTransformations(ss);
             }
 
-            // TODO : Remove the stream inside the GetInt function
-            std::istringstream stream {child->FirstChildElement("Indices")->GetText()};
-
-            auto id0 = utils::GetInt(stream);
-            auto id1 = utils::GetInt(stream);
-            auto id2 = utils::GetInt(stream);
+            auto id0 = utils::GetInt(child->FirstChildElement("Indices"));
+            auto id1 = utils::GetInt(child->FirstChildElement("Indices"));
+            auto id2 = utils::GetInt(child->FirstChildElement("Indices"));
 
             auto ind0 = glm::vec4(context.GetVertex(id0), 1);
             auto ind1 = glm::vec4(context.GetVertex(id1), 1);
@@ -191,9 +189,7 @@ namespace
             std::vector<std::string> transformations;
             if(auto trns = child->FirstChildElement("Transformations"))
             {
-                // TODO : Remove this ss inside the utils function
-                std::istringstream ss {trns->GetText()};
-                transformations = gpt::utils::GetTransformations(ss);
+                transformations = gpt::utils::GetTransformations(trns);
             }
 
             glm::mat4 matrix(1.0f);
@@ -280,6 +276,22 @@ namespace
 
         return meshes;
     }
+
+    std::vector<std::unique_ptr<gpt::Light>> LoadLight(tinyxml2::XMLElement *elem)
+    {
+        std::vector<std::unique_ptr<gpt::Light>> lights;
+        for (auto child = elem->FirstChildElement("PointLight"); child != nullptr; child = child->NextSiblingElement("PointLight"))
+        {
+            int id;
+            child->QueryIntAttribute("id", &id);
+
+            auto position = utils::GetElem(child->FirstChildElement("Position"));
+            auto intensity = utils::GetElem(child->FirstChildElement("Intensity"));
+
+            lights.push_back(std::make_unique<gpt::lights::PointLight>(position, intensity));
+        }
+        return lights;
+    }
 }
 
 gpt::Scene load_scene(const std::string& filename)
@@ -344,7 +356,7 @@ gpt::Scene load_scene(const std::string& filename)
     meta.cameras.push_back(camera);
     if (auto elem = docscene->FirstChildElement("Lights"))
     {
-        meta.lights = gpt::Light::Load(elem);
+        meta.lights = LoadLight(elem);
     }
 
 /*

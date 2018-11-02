@@ -43,6 +43,22 @@ namespace gpt
             return result;
         }
 
+        inline auto GetTransformations(tinyxml2::XMLElement* element)
+        {
+            std::istringstream stream {element->GetText()};
+
+            std::vector<std::string> result;
+
+            while(stream.good())
+            {
+                std::string tr;
+                stream >> tr;
+                result.push_back(tr);
+            }
+
+            return result;
+        }
+
         inline glm::vec3 GetVertex(std::istringstream& stream)
         {
             glm::vec3 vert;
