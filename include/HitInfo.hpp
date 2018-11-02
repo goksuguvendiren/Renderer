@@ -8,11 +8,7 @@
 
 namespace gpt
 {
-    namespace shapes
-    {
-        class Shape;
-    }
-
+    class Shape;
     class Material;
 
     class HitInfo
@@ -22,9 +18,9 @@ namespace gpt
         glm::vec3 position;
         Ray r;
 
-        const gpt::shapes::Shape* shape;
+        const gpt::Shape* shape;
     public:
-        HitInfo(glm::vec3 n, glm::vec3 point, Ray ry, const gpt::shapes::Shape* hitShape, float t = std::numeric_limits<float>::infinity()) : param(t),
+        HitInfo(glm::vec3 n, glm::vec3 point, Ray ry, const gpt::Shape* hitShape, float t = std::numeric_limits<float>::infinity()) : param(t),
                                                                                                           normal(n),
                                                                                                           position(point),
                                                                                                           r(ry),
@@ -35,7 +31,7 @@ namespace gpt
         glm::vec3   Normal() const { return normal; }
         glm::vec3   Position() const { return position; }
 
-        const gpt::shapes::Shape* Shape() const { return shape; }
+        const gpt::Shape* Shape() const { return shape; }
         const gpt::Material&  Material() const;
     };
 }

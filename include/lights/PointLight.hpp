@@ -17,7 +17,7 @@ namespace gpt
             glm::vec3 intensity;
 
         public:
-            PointLight(int i, const glm::vec3& pos, const glm::vec3& intens) : Light(i), position(pos), intensity(intens) {}
+            PointLight(const glm::vec3& pos, const glm::vec3& intens) : position(pos), intensity(intens) {}
 
             glm::vec3 Direction(const glm::vec3& hitpos) const;
         };

@@ -12,23 +12,13 @@
 
 namespace gpt
 {
-class Scene;
-
-namespace lights
-{
     class Light
     {
-        int id;
-
     public:
-        explicit Light(int i) : id(i) {}
-
         virtual glm::vec3 Direction(const glm::vec3& hitpos) const = 0;
 //        //virtual glm::vec3 Position() const = 0;
 //        virtual glm::vec3 Intensity(const glm::vec3& lightPos_hitPos) const = 0;
 
-
-        static std::vector<std::unique_ptr<gpt::lights::Light>> Load(gpt::Scene &scene, tinyxml2::XMLElement *elem);
+        static std::vector<std::unique_ptr<gpt::Light>> Load(tinyxml2::XMLElement *elem);
     };
-}
 }

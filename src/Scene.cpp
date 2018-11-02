@@ -7,7 +7,7 @@
 boost::optional<gpt::HitInfo> gpt::Scene::Hit(const Ray &ray) const
 {
     boost::optional<gpt::HitInfo> min_hit = boost::none;
-    for (auto& shape : shapes)
+    for (auto& shape : meta.shapes)
     {
         auto hit = shape->Hit(ray);
         if (!hit) continue;

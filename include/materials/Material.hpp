@@ -12,6 +12,11 @@
 
 namespace gpt
 {
+    struct MaterialLoadContext
+    {
+
+    };
+
     class Scene;
 
     class Material

@@ -3,6 +3,7 @@
 //
 
 #include <Scene.hpp>
+#include <loaders/xml_loader.hpp>
 
 #include <iostream>
 #include <sstream>
@@ -18,11 +19,9 @@
 
 using namespace gpt;
 
-Scene load_scene(const std::string& file);
-
 namespace
 {
-    std::unique_ptr<Material> LoadBasicMaterial(const gpt::Scene &scene, tinyxml2::XMLElement *elem)
+    std::unique_ptr<Material> LoadBasicMaterial(const MaterialLoadContext& context, tinyxml2::XMLElement *elem)
     {
         auto ambient = utils::GetElem(elem->FirstChildElement("AmbientReflectance"));
         auto diffuse = utils::GetElem(elem->FirstChildElement("DiffuseReflectance"));
@@ -31,7 +30,7 @@ namespace
         return std::make_unique<gpt::materials::BasicMaterial>(ambient, diffuse, specular);
     }
 
-    std::unique_ptr<Material> LoadEmittingMaterial(const gpt::Scene &scene, tinyxml2::XMLElement *elem)
+    std::unique_ptr<Material> LoadEmittingMaterial(const MaterialLoadContext& context, tinyxml2::XMLElement *elem)
     {
         auto tmp = elem->FirstChildElement("Radiance");
 
@@ -51,19 +50,42 @@ namespace
             {"Glass", LoadBasicMaterial }
     };
 
-    static glm::vec3 GetVertex(std::istringstream& stream)
+    boost::optional<gpt::shapes::Triangle> GetFace(const ShapeLoadContext& context, std::istringstream& stream, int vertexOffset, int texCoordsOffset,
+                                                   const glm::mat4& matrix, int matID, int index, int texID = -1)
     {
-        glm::vec3 vert;
+        int x, y, z;
 
-        float datax;
-        float datay;
-        float dataz;
+        if (!(stream >> x)) {
+            return boost::none;
+        }
+        if (!(stream >> y)) {
+            return boost::none;
+        }
+        if (!(stream >> z)) {
+            return boost::none;
+        }
 
-        stream >> datax;
-        stream >> datay;
-        stream >> dataz;
+        int a = x;
+        int b = y;
+        int c = z;
 
-        return glm::vec3{datax, datay, dataz};
+        x += vertexOffset;
+        y += vertexOffset;
+        z += vertexOffset;
+
+        auto ind0 = glm::vec4(context.GetVertex(x), 1);
+        auto ind1 = glm::vec4(context.GetVertex(y), 1);
+        auto ind2 = glm::vec4(context.GetVertex(z), 1);
+
+        ind0 = matrix * ind0;
+        ind1 = matrix * ind1;
+        ind2 = matrix * ind2;
+
+        return gpt::shapes::Triangle(index,
+                                     {ind0.x, ind0.y, ind0.z},
+                                     {ind1.x, ind1.y, ind1.z},
+                                     {ind2.x, ind2.y, ind2.z},
+                                     context.GetMaterial(matID));
     }
 
     std::vector<glm::vec3> LoadVertexData(tinyxml2::XMLElement *elem)
@@ -73,13 +95,13 @@ namespace
         std::vector<glm::vec3> verts;
         while(stream)
         {
-            verts.push_back(GetVertex(stream));
+            verts.push_back(gpt::utils::GetVertex(stream));
         }
 
         return verts;
     }
 
-    std::map<int, std::unique_ptr<Material>> LoadMaterials(const Scene& scene, tinyxml2::XMLElement *elem)
+    std::map<int, std::unique_ptr<Material>> LoadMaterials(const MaterialLoadContext& scene, tinyxml2::XMLElement *elem)
     {
         std::map<int, std::unique_ptr<Material>> result;
         for (auto child = elem->FirstChildElement("Material"); child != nullptr; child = child->NextSiblingElement())
@@ -99,10 +121,172 @@ namespace
 
         return result;
     }
+
+    std::vector<gpt::shapes::Triangle> LoadTriangle(const ShapeLoadContext& context, tinyxml2::XMLElement* elem)
+    {
+        std::vector<gpt::shapes::Triangle> tris;
+
+        for (auto child = elem->FirstChildElement("Triangle"); child != nullptr; child = child->NextSiblingElement("Triangle")) {
+            int id;
+            child->QueryIntAttribute("id", &id);
+            int matID = child->FirstChildElement("Material")->IntText(0);
+
+            int texID = -1;
+            if (auto texelem = child->FirstChildElement("Texture"))
+            {
+                texID = texelem->IntText(-1);
+            }
+
+            std::vector<std::string> transformations;
+            if(auto trns = child->FirstChildElement("Transformations")){
+                std::istringstream ss {trns->GetText()};
+                transformations = gpt::utils::GetTransformations(ss);
+            }
+
+            // TODO : Remove the stream inside the GetInt function
+            std::istringstream stream {child->FirstChildElement("Indices")->GetText()};
+
+            auto id0 = utils::GetInt(stream);
+            auto id1 = utils::GetInt(stream);
+            auto id2 = utils::GetInt(stream);
+
+            auto ind0 = glm::vec4(context.GetVertex(id0), 1);
+            auto ind1 = glm::vec4(context.GetVertex(id1), 1);
+            auto ind2 = glm::vec4(context.GetVertex(id2), 1);
+
+            glm::mat4 matrix(1.0f);
+            for (auto& tr : transformations)
+            {
+                auto m = context.GetTransformation(tr);
+                matrix = m * matrix;
+            }
+
+            ind0 = matrix * ind0;
+            ind1 = matrix * ind1;
+            ind2 = matrix * ind2;
+
+            tris.emplace_back(gpt::shapes::Triangle(id,
+                                                    {ind0.x, ind0.y, ind0.z},
+                                                    {ind1.x, ind1.y, ind1.z},
+                                                    {ind2.x, ind2.y, ind2.z},
+                                                    context.GetMaterial(matID)));
+        }
+
+        return tris;
+    }
+
+    std::vector<gpt::shapes::Sphere> LoadSphere(const ShapeLoadContext& context, tinyxml2::XMLElement *elem)
+    {
+        std::vector<gpt::shapes::Sphere> spheres;
+
+        for (auto child = elem->FirstChildElement("Sphere"); child != nullptr; child = child->NextSiblingElement("Sphere")) {
+            int id;
+            child->QueryIntAttribute("id", &id);
+            int materialID  = child->FirstChildElement("Material")->IntText(0);
+            int centerID    = child->FirstChildElement("Center")->IntText(0);
+            float radius    = child->FirstChildElement("Radius")->FloatText(0);
+
+            glm::vec3 center = context.GetVertex(centerID);
+
+            std::vector<std::string> transformations;
+            if(auto trns = child->FirstChildElement("Transformations"))
+            {
+                // TODO : Remove this ss inside the utils function
+                std::istringstream ss {trns->GetText()};
+                transformations = gpt::utils::GetTransformations(ss);
+            }
+
+            glm::mat4 matrix(1.0f);
+            for (auto& tr : transformations)
+            {
+                auto m = context.GetTransformation(tr);
+                matrix = m * matrix;
+            }
+
+            int tid = -1;
+            if (auto tex = child->FirstChildElement("Texture"))
+            {
+                tid = tex->IntText(-1);
+            }
+
+            gpt::shapes::Sphere sp {id, radius, center, context.GetMaterial(materialID)};
+            sp.TransformationMatrix(matrix);
+
+            spheres.push_back(std::move(sp));
+        }
+
+        return spheres;
+    }
+
+    std::vector<gpt::shapes::Mesh> LoadMesh(const ShapeLoadContext& context, tinyxml2::XMLElement *elem)
+    {
+        std::vector<gpt::shapes::Mesh> meshes;
+
+        for (auto child = elem->FirstChildElement("Mesh"); child != nullptr; child = child->NextSiblingElement("Mesh"))
+        {
+            int id;
+            child->QueryIntAttribute("id", &id);
+
+            bool is_art = false;
+            if (child->QueryBoolText(&is_art))
+            {
+                is_art = true;
+            }
+
+            int matID = child->FirstChildElement("Material")->IntText(0);
+            int texID = -1;
+            if (auto sth = child->FirstChildElement("Texture")){
+                texID = sth->IntText(0);
+            }
+
+            std::vector<std::string> transformations;
+            if(auto trns = child->FirstChildElement("Transformations"))
+            {
+                std::istringstream ss {trns->GetText()};
+                transformations = gpt::utils::GetTransformations(ss);
+            }
+
+            glm::mat4 matrix(1.0f);
+            for (auto& tr : transformations){
+                auto m = context.GetTransformation(tr);
+                matrix = m * matrix;
+            }
+
+            gpt::shapes::Mesh msh{context.GetMaterial(matID)};
+            auto FaceData = child->FirstChildElement("Faces");
+            std::istringstream stream { FaceData->GetText() };
+            int vertexOffset = 0;
+            int texCoordOffset = 0;
+
+            if (FaceData->QueryIntAttribute("vertexOffset", &vertexOffset))
+                ;
+            if (FaceData->QueryIntAttribute("textureOffset", &texCoordOffset))
+                ;
+
+            boost::optional<gpt::shapes::Triangle> tr;
+            int index = 1;
+
+            while((tr = GetFace(context, stream, vertexOffset, texCoordOffset, matrix, matID, index++, texID)))
+            {
+                auto tri = *tr;
+                msh.AddFace(std::move(*tr));
+            }
+//        msh.SetShadingMode(mode);
+//        msh.SetArtificial(is_art);
+
+//        msh.BoundingBox();
+            meshes.push_back(std::move(msh));
+        }
+
+        return meshes;
+    }
 }
 
-void gpt::Scene::Load(const std::string& filename)
+gpt::Scene load_scene(const std::string& filename)
 {
+    SceneMeta meta;
+    MaterialLoadContext materialContext;
+
     tinyxml2::XMLDocument document;
     document.LoadFile(filename.c_str());
 
@@ -122,46 +306,48 @@ void gpt::Scene::Load(const std::string& filename)
     if (auto elem = docscene->FirstChildElement("BackgroundColor"))
     {
         auto color = utils::GetElem(elem);
-        backgroundColor = color;
+        meta.backgroundColor = color;
     }
 
     if (auto elem = docscene->FirstChildElement("ShadowRayEpsilon"))
     {
-        shadowRayEpsilon = elem->FloatText();
+        meta.shadowRayEpsilon = elem->FloatText();
     }
 
     if (auto elem = docscene->FirstChildElement("MaxRecursionDepth"))
     {
-        maxRecursionDepth = (elem->IntText(1));
+        meta.maxRecursionDepth = (elem->IntText(1));
     }
 
     if (auto elem = docscene->FirstChildElement("IntersectionTestEpsilon"))
     {
-        intersectionTestEpsilon = elem->FloatText();
+        meta.intersectionTestEpsilon = elem->FloatText();
     }
 
     if (auto elem = docscene->FirstChildElement("AmbientLight"))
     {
         auto color = utils::GetElem(elem);
-        ambientLight = color;
+        meta.ambientLight = color;
     }
 
     gpt::Camera camera;
-    if (auto elem = docscene->FirstChildElement("Camera")){
+    if (auto elem = docscene->FirstChildElement("Camera"))
+    {
         camera = LoadCamera(elem);
     }
-    else {
+    else
+        {
         std::cerr << "Could not read camera information\n";
         std::abort();
     }
 
-    cameras.push_back(camera);
+    meta.cameras.push_back(camera);
     if (auto elem = docscene->FirstChildElement("Lights"))
     {
-        lights = gpt::lights::Light::Load(*this, elem);
+        meta.lights = gpt::Light::Load(elem);
     }
-/*
 
+/*
     if (auto elem = docscene->FirstChildElement("BRDFs"))
     {
         brdfs = LoadBRDFs(elem);
@@ -174,12 +360,12 @@ void gpt::Scene::Load(const std::string& filename)
 
     if (auto elem = docscene->FirstChildElement("VertexData"))
     {
-        vertices = LoadVertexData(elem);
+        meta.vertices = LoadVertexData(elem);
     }
 
     if (auto elem = docscene->FirstChildElement("Transformations"))
     {
-        transformations  = gpt::LoadTransformations(elem);
+        meta.transformations  = gpt::LoadTransformations(elem);
     }
 
 /*
@@ -191,57 +377,20 @@ void gpt::Scene::Load(const std::string& filename)
 
     if (auto elem = docscene->FirstChildElement("Materials"))
     {
-        materials = LoadMaterials(*this, elem);
+        meta.materials = LoadMaterials(materialContext, elem);
     }
 
     if(auto objects = docscene->FirstChildElement("Objects"))
     {
-        triangles     = gpt::shapes::Triangle::Load(*this, objects);
-        spheres       = gpt::shapes::Sphere::Load(*this, objects);
-        meshes        = gpt::shapes::Mesh::Load(*this, objects);
+        ShapeLoadContext shapeContext(meta.vertices, meta.transformations, meta.materials);
+        meta.triangles     = LoadTriangle(shapeContext, objects);
+        meta.spheres       = LoadSphere(shapeContext, objects);
+        meta.meshes        = std::move(LoadMesh(shapeContext, objects));
 
-        for (auto& tri : triangles) shapes.push_back(&tri);
-        for (auto& sph : spheres)   shapes.push_back(&sph);
-        for (auto& msh : meshes)    shapes.push_back(&msh);
+        for (auto& tri : meta.triangles) meta.shapes.push_back(&tri);
+        for (auto& sph : meta.spheres)   meta.shapes.push_back(&sph);
+        for (auto& msh : meta.meshes)    meta.shapes.push_back(&msh);
     }
 
-//    for (auto& mesh : meshes)
-//    {
-//        assert(mesh.GetMaterial());
-//    }
-//
-//    glm::vec3 mins, maxs;
-//
-//    std::for_each(triangles.begin(), triangles.end(), [this, &mins, &maxs](auto& tri)
-//    {
-//        Compare(tri.Max(), mins, maxs);
-//        Compare(tri.Min(), mins, maxs);
-//        shapes.push_back(&tri);
-//    });
-//
-//    std::for_each(spheres.begin(), spheres.end(), [this, &mins, &maxs](auto& sph)
-//    {
-//        Compare(tri.Max(), mins, maxs);
-//        Compare(tri.Min(), mins, maxs);
-//        shapes.push_back(&sph);
-//    });
-//
-//    std::for_each(meshes.begin(), meshes.end(), [this, &mins, &maxs](auto& msh) {
-//        Compare(msh.Max(), mins, maxs);
-//        Compare(msh.Min(), mins, maxs);
-//
-//        shapes.push_back(&msh);
-//    });
-//
-//    std::for_each(meshInstances.begin(), meshInstances.end(), [this, &mins, &maxs](auto& msh) {
-//        Compare(msh.Max(), mins, maxs);
-//        Compare(msh.Min(), mins, maxs);
-//
-//        shapes.push_back(&msh);
-//    });
-//
-//    if (shapes.size() > 0)
-//        boundingBox = BoundingVolume(shapes, Axis::X);
-//    else boundingBox = BoundingVolume();
-
+    return Scene(std::move(meta));
 }

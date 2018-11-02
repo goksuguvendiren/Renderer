@@ -33,8 +33,6 @@ namespace gpt
 //            boost::optional<float>   ShadowHit(const Ray& ray) const;
 
             const auto& Faces() const { return faces; }
-
-            static std::vector<gpt::shapes::Mesh> Load(gpt::Scene& scene, tinyxml2::XMLElement *elem);
         };
     }
 }
