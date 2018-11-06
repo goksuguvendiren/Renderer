@@ -292,6 +292,44 @@ namespace
         }
         return lights;
     }
+
+    gpt::Camera LoadCamera(tinyxml2::XMLElement *element)
+    {
+        int id;
+        if (element->QueryIntAttribute("id", &id) == tinyxml2::XML_NO_ATTRIBUTE)
+        {
+            std::cerr << "No such attribute as id" << '\n';
+            std::abort();
+        }
+
+        glm::vec3 position = utils::GetElem(element->FirstChildElement("Position"));
+        glm::vec3 gaze = utils::GetElem(element->FirstChildElement("Gaze"));
+        glm::vec3 up = utils::GetElem(element->FirstChildElement("Up"));
+
+        tinyxml2::XMLElement* elem;
+        int sampleCount = 1;
+
+        if ((elem = element->FirstChildElement("NumSamples")))
+        {
+            sampleCount = elem->IntText(1);
+        }
+
+        int focalDistance = 1;
+        if ((elem = element->FirstChildElement("FocusDistance"))){
+            focalDistance = elem->IntText(1);
+        }
+
+        float apertureSize = 0;
+        if ((elem = element->FirstChildElement("ApertureSize"))){
+            apertureSize = elem->FloatText(0);
+        }
+
+        gpt::ImagePlane plane = gpt::CreatePlane(element, focalDistance);
+
+        std::string name = element->FirstChildElement("ImageName")->GetText();
+
+        return gpt::Camera(plane, id, position, gaze, up, name, sampleCount, focalDistance, apertureSize);
+    }
 }
 
 gpt::Scene load_scene(const std::string& filename)
@@ -345,7 +383,7 @@ gpt::Scene load_scene(const std::string& filename)
     gpt::Camera camera;
     if (auto elem = docscene->FirstChildElement("Camera"))
     {
-        camera = LoadCamera(elem);
+        camera = std::move(LoadCamera(elem));
     }
     else
         {

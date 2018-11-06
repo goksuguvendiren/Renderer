@@ -15,7 +15,6 @@ namespace gpt
     class Camera;
 
     Image Render(/*const gpt::Camera& camera,*/ const gpt::Scene& scene);
-    gpt::Camera LoadCamera(tinyxml2::XMLElement* element);
 
     class Camera
     {

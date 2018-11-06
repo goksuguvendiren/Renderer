@@ -116,7 +116,7 @@ gpt::Image gpt::Render(/*const gpt::Camera& camera, */const gpt::Scene& scene)
             auto pixelLocation = CalculatePixelLocation(camera, pixelCenter);
 
             auto ray = gpt::Ray(camera.Position(), pixelLocation - camera.Position(), true);
-            auto color = Trace(scene, ray, 1, 1);
+            auto color = Trace(scene, ray, 1, 5);
 
             image.at(i, j) = glm::min(color, glm::vec3{255.f, 255.f, 255.f}) / 255.f;
         }
@@ -125,41 +125,4 @@ gpt::Image gpt::Render(/*const gpt::Camera& camera, */const gpt::Scene& scene)
     }
 
     return image;
-}
-
-gpt::Camera gpt::LoadCamera(tinyxml2::XMLElement *element)
-{
-    int id;
-    if (element->QueryIntAttribute("id", &id) == tinyxml2::XML_NO_ATTRIBUTE){
-        std::cerr << "No such attribute as id" << '\n';
-        std::abort();
-    }
-
-    glm::vec3 position = utils::GetElem(element->FirstChildElement("Position"));
-    glm::vec3 gaze = utils::GetElem(element->FirstChildElement("Gaze"));
-    glm::vec3 up = utils::GetElem(element->FirstChildElement("Up"));
-
-    tinyxml2::XMLElement* elem;
-    int sampleCount = 1;
-
-    if ((elem = element->FirstChildElement("NumSamples")))
-    {
-        sampleCount = elem->IntText(1);
-    }
-
-    int focalDistance = 1;
-    if ((elem = element->FirstChildElement("FocusDistance"))){
-        focalDistance = elem->IntText(1);
-    }
-
-    float apertureSize = 0;
-    if ((elem = element->FirstChildElement("ApertureSize"))){
-        apertureSize = elem->FloatText(0);
-    }
-
-    gpt::ImagePlane plane = gpt::CreatePlane(element, focalDistance);
-
-    std::string name = element->FirstChildElement("ImageName")->GetText();
-
-    return gpt::Camera(plane, id, position, gaze, up, name, sampleCount, focalDistance, apertureSize);
 }

@@ -41,7 +41,10 @@ set(SOURCE_FILES
     src/lights/Light.cpp
     src/lights/PointLight.cpp
     include/materials/BasicMaterial.hpp
-        src/materials/BasicMaterial.cpp)
+    src/materials/BasicMaterial.cpp 
+    include/materials/BRDF/ModifiedBlinnPhong.hpp 
+    src/materials/BRDF/ModifiedBlinnPhong.cpp)
+
 add_executable(RayTracer ${SOURCE_FILES})
 
 add_subdirectory(src/loaders)
