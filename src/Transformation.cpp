@@ -10,16 +10,7 @@
 #include <map>
 
 #include "Transformation.hpp"
-
-static glm::vec3 GetElem(std::istringstream& ss)
-{
-    glm::vec3 color;
-    ss >> color.r;
-    ss >> color.g;
-    ss >> color.b;
-
-    return color;
-}
+#include "Utils.hpp"
 
 static float GetAngle(std::istringstream& ss)
 {
@@ -55,12 +46,12 @@ std::map<std::string, glm::mat4> gpt::LoadTransformations(tinyxml2::XMLElement *
 std::map<std::string, glm::mat4> gpt::LoadTranslations(tinyxml2::XMLElement *elem)
 {
     std::map<std::string, glm::mat4> trs;
-    for (auto child = elem->FirstChildElement("Translation"); child != NULL; child = child->NextSiblingElement()){
+    for (auto child = elem->FirstChildElement("Translation"); child != nullptr; child = child->NextSiblingElement()){
         int id;
         child->QueryIntAttribute("id", &id);
 
         std::istringstream ss {child->GetText()};
-        auto details = GetElem(ss);
+        auto details = utils::GetElem(ss);
         auto View = glm::translate(glm::mat4(1.), details);
 
         auto sth = "t" + std::to_string(id);
@@ -74,14 +65,14 @@ std::map<std::string, glm::mat4> gpt::LoadTranslations(tinyxml2::XMLElement *ele
 std::map<std::string, glm::mat4> gpt::LoadRotations(tinyxml2::XMLElement *elem)
 {
     std::map<std::string, glm::mat4> rts;
-    for (auto child = elem->FirstChildElement("Rotation"); child != NULL; child = child->NextSiblingElement()){
+    for (auto child = elem->FirstChildElement("Rotation"); child != nullptr; child = child->NextSiblingElement()){
         int id;
         child->QueryIntAttribute("id", &id);
 
         std::istringstream ss {child->GetText()};
 
         auto angle   = GetAngle(ss);
-        auto details = GetElem(ss);
+        auto details = utils::GetElem(ss);
         auto matrix  = glm::rotate(glm::mat4(1.), glm::radians(angle), details);
 
         auto sth = "r" + std::to_string(id);
@@ -94,12 +85,12 @@ std::map<std::string, glm::mat4> gpt::LoadRotations(tinyxml2::XMLElement *elem)
 std::map<std::string, glm::mat4> gpt::LoadScalings(tinyxml2::XMLElement *elem)
 {
     std::map<std::string, glm::mat4> scls;
-    for (auto child = elem->FirstChildElement("Scaling"); child != NULL; child = child->NextSiblingElement()){
+    for (auto child = elem->FirstChildElement("Scaling"); child != nullptr; child = child->NextSiblingElement()){
         int id;
         child->QueryIntAttribute("id", &id);
 
         std::istringstream ss {child->GetText()};
-        auto details = GetElem(ss);
+        auto details = utils::GetElem(ss);
         auto matrix = glm::scale(glm::mat4(1.), details);
 
         auto sth = "s" + std::to_string(id);

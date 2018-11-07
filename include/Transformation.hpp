@@ -2,8 +2,7 @@
 // Created by Göksu Güvendiren on 22/07/2018.
 //
 
-#ifndef RAYTRACER_TRANSFORMATION_HPP
-#define RAYTRACER_TRANSFORMATION_HPP
+#pragma once
 
 #include <string>
 #include <glm/detail/type_mat.hpp>
@@ -25,4 +24,3 @@ namespace gpt
     std::map<std::string, glm::mat4> LoadScalings(tinyxml2::XMLElement *elem);
 }
 
-#endif //RAYTRACER_TRANSFORMATION_HPP

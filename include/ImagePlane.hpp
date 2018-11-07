@@ -2,8 +2,7 @@
 // Created by Göksu Güvendiren on 21/07/2018.
 //
 
-#ifndef RAYTRACER_IMAGEPLANE_HPP
-#define RAYTRACER_IMAGEPLANE_HPP
+#pragma once
 
 #include "tinyxml/tinyxml2.h"
 
@@ -58,5 +57,3 @@ namespace gpt
 
     ImagePlane CreatePlane(tinyxml2::XMLElement* element, int focalDistance);
 }
-
-#endif //RAYTRACER_IMAGEPLANE_HPP

@@ -2,8 +2,7 @@
 // Created by Göksu Güvendiren on 21/07/2018.
 //
 
-#ifndef RAYTRACER_CAMERA_HPP
-#define RAYTRACER_CAMERA_HPP
+#pragma once
 
 #include <glm/glm.hpp>
 #include <string>
@@ -16,7 +15,6 @@ namespace gpt
     class Camera;
 
     Image Render(/*const gpt::Camera& camera,*/ const gpt::Scene& scene);
-    gpt::Camera LoadCamera(tinyxml2::XMLElement* element);
 
     class Camera
     {
@@ -77,5 +75,3 @@ namespace gpt
         void SetSampleCount(int numsamp) { sampleCount = numsamp; }
     };
 }
-
-#endif //RAYTRACER_CAMERA_HPP

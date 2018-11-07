@@ -2,31 +2,36 @@
 // Created by Göksu Güvendiren on 21/07/2018.
 //
 
-#ifndef RAYTRACER_SCENE_HPP
-#define RAYTRACER_SCENE_HPP
+#pragma once
 
 #include <glm/vec3.hpp>
 #include <string>
-#include <shapes/Shape.hpp>
 #include <vector>
+#include <map>
+#include <memory>
+
+#include <shapes/Shape.hpp>
 #include <shapes/Triangle.hpp>
 #include <shapes/Sphere.hpp>
-#include <map>
 #include <shapes/Mesh.hpp>
-#include "Camera.hpp"
-#include <memory>
+#include <Camera.hpp>
+
+#include <materials/Material.hpp>
+#include <iostream>
+#include <lights/Light.hpp>
+
+using MaterialFactory = std::function<std::unique_ptr<gpt::Material>(const gpt::MaterialLoadContext&, tinyxml2::XMLElement *)>;
+extern std::map<std::string, MaterialFactory> loaders;
 
 namespace gpt
 {
-    class Camera;
-    class Scene
+    struct SceneMeta
     {
-        std::string path;
-
         glm::vec3 backgroundColor;
         glm::vec3 ambientLight;
-        float shadowRayEpsilon;
-        float intersectionTestEpsilon;
+        float shadowRayEpsilon          = 1e-3;
+        float intersectionTestEpsilon   = 1e-6;
+        float maxRecursionDepth;
 
         std::vector<gpt::Camera> cameras;
         std::vector<glm::vec3> vertices;
@@ -36,29 +41,39 @@ namespace gpt
         std::vector<gpt::shapes::Triangle> triangles;
         std::vector<gpt::shapes::Mesh> meshes;
 
-        std::vector<std::unique_ptr<gpt::shapes::Shape>> shapes;
+        std::vector<gpt::Shape*> shapes;
+
+        std::map<int, std::unique_ptr<gpt::Material>> materials;
+        std::vector<std::unique_ptr<gpt::Light>> lights;
+    };
+
+    class Camera;
+    class Scene
+    {
+        SceneMeta meta;
 
     public:
-        Scene(glm::vec3 bg = {0, 0, 0}, glm::vec3 al = {0, 0, 0})
-        {
-            shadowRayEpsilon = 1e-3;
-            intersectionTestEpsilon = 1e-6;
-        }
+        Scene(SceneMeta m) : meta(std::move(m))
+        {}
         ~Scene() = default;
+        Scene(Scene&& s) = default;
         Scene(const Scene& s) = delete;
         Scene& operator=(const Scene&) = delete;
 
         boost::optional<HitInfo> Hit(const Ray& r) const;
 
-        void AddShape(std::unique_ptr<gpt::shapes::Shape>&& shape) { shapes.push_back(std::move(shape)); }
-        void Load(const std::string& filename);
-
 //        void AddCamera(gpt::Camera&& cam) { cameras.push_back(std::move(cam)); }
-        const gpt::Camera& GetCamera(int index) const { return cameras[index]; }
+        const gpt::Camera& GetCamera(int index) const { return meta.cameras[index]; }
+        const gpt::Material& GetMaterial(int id) const { return *(meta.materials.find(id)->second.get()); }
 
-        glm::vec3& GetVertex(int id) { return vertices[id - 1]; }
-        glm::mat4  GetTransformation(const std::string& str) { return transformations.find(str)->second; }
+        const std::vector<std::unique_ptr<gpt::Light>>& Lights() const { return meta.lights; }
+
+        glm::vec3& GetVertex(int id) { return meta.vertices[id - 1]; }
+        glm::mat4  GetTransformation(const std::string& str) { return meta.transformations.find(str)->second; }
+
+        glm::vec3 BackgroundColor() const { return meta.backgroundColor; }
+        glm::vec3 AmbientColor() const { return meta.ambientLight; }
+
+        float ShadowRayEpsilon() const { return meta.shadowRayEpsilon; }
     };
 }
-
-#endif //RAYTRACER_SCENE_HPP

@@ -2,8 +2,7 @@
 // Created by Göksu Güvendiren on 22/07/2018.
 //
 
-#ifndef RAYTRACER_IMAGE_HPP
-#define RAYTRACER_IMAGE_HPP
+#pragma once
 
 #include <vector>
 #include <glm/vec3.hpp>
@@ -32,5 +31,3 @@ namespace gpt
         const std::vector<glm::vec3>& Data() { return pixels; }
     };
 }
-
-#endif //RAYTRACER_IMAGE_HPP

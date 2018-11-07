@@ -7,63 +7,93 @@
 #include <iostream>
 #include <sstream>
 
-glm::vec3 RenderPixel(const gpt::Scene& scene, const gpt::Camera& camera, const glm::vec3 &pixelLocation)
-{
-    glm::vec3 pixelColor = {0, 0, 0};
-    glm::vec3 cameraLocation = camera.Position();
+#include "Utils.hpp"
+#include <random>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/constants.hpp>
 
-    auto ray = gpt::Ray(cameraLocation, glm::normalize(pixelLocation - cameraLocation), true);
+std::mt19937 hemisphere_seed;
+
+glm::vec3 sample_hemisphere(const glm::vec3& normal)
+{
+    static std::uniform_real_distribution<float> asd(0, 1);
+    static std::uniform_real_distribution<float> asd1(0, 1);
+    float sample1 = asd(hemisphere_seed);
+    float sample2 = asd1(hemisphere_seed);
+
+    auto dir = glm::vec3{cos(2 * glm::pi<float>() * sample2) * glm::sqrt(1 - glm::pow(sample1, 2.f)),
+                         sample1,
+                         sin(2 * glm::pi<float>() * sample2) * glm::sqrt(1 - glm::pow(sample2, 2.f))};
+
+    auto c = glm::cross(glm::vec3{0.f, 1.f, 0.f}, normal);
+    auto angle = glm::acos(glm::dot(glm::vec3{0, 1, 0}, normal));
+    auto res = glm::angleAxis(angle, c) * glm::normalize(dir);
+
+    const float r = std::sqrt(sample1);
+    const float theta = 2 * glm::pi<float>() * sample2;
+
+    const float x = r * std::cos(theta);
+    const float y = r * std::sin(theta);
+
+    return glm::vec3(x, y, std::sqrt(std::max(0.0f, 1 - sample1)));
+
+    if (normal == glm::vec3{0, -1, 0})
+    {
+        return -res;
+    }
+    return res;
+}
+
+
+glm::vec3 Trace(const gpt::Scene& scene, const gpt::Ray& ray, int recursionDepth, int maxRecDepth)
+{
+    glm::vec3 color = {0, 0, 0};
+
     boost::optional<gpt::HitInfo> hit = scene.Hit(ray);
-//        auto sth = *hit;
 
     if (hit)
     {
-        glm::vec3 col = {255, 230, 234};//CalculateMaterialReflectances(*hit, 0);
-        pixelColor += glm::min(col, glm::vec3{500.f, 500.f, 500.f});
+        color = hit->Material().CalculateReflectance(scene, *hit, 1);
     }
     else
     {
-        pixelColor += glm::vec3{0, 0, 0};//scene.BackgroundColor();
+        color = scene.BackgroundColor();
+        return color;
     }
 
-    return pixelColor;
+    if (recursionDepth >= maxRecDepth) return color;
+
+    // otherwise, redirect the ray :
+    auto direction = sample_hemisphere(hit->Normal());
+    gpt::Ray monte_carlo_ray(hit->Position() + (scene.ShadowRayEpsilon() * direction), direction, false);
+    return color + Trace(scene, monte_carlo_ray, recursionDepth++, maxRecDepth);
 }
 
 glm::vec3 CalculatePixelLocation(const gpt::Camera& camera, glm::vec3 pixelCenter)
 {
     return pixelCenter;
-//    float cellWidth  = camera.ImagePlane().PixelWidth()  / float(camera.DivCount());
-//    float cellHeight = camera.ImagePlane().PixelHeight() / float(camera.DivCount());
-//
-//    auto oneRight = cellWidth * camera.Right();
-//    auto oneDown  = -cellHeight * camera.Up();
-//
-//    // label the first pixel, by taking the center of the pixel to the top left
-//    glm::vec3 pixelBeginning = pixelCenter - ((camera.ImagePlane().PixelWidth() / 2.f) * camera.Right());
-//    pixelBeginning -= ((camera.ImagePlane().PixelHeight() / 2.f) * camera.Up());
-//
-//    // then add half a cell size to locate the center of the cell.
-//    pixelBeginning += cellWidth / 2.f;
-//    pixelBeginning += cellHeight / 2.f;
-//
-//    //calculate pixel location
-//    int indH = camera.DivCount();
-//    int indW = camera.DivCount();
-//
-//    glm::vec3 pixelLocation = pixelBeginning + (float(indW) * oneRight + float(indH) * oneDown);
-//
-//    std::cerr << (pixelLocation == pixelCenter) << '\n';
-//
-//    return pixelLocation;
 }
+
+void UpdateProgress(float progress)
+{
+    int barWidth = 70;
+
+    std::cout << "[";
+    int pos = barWidth * progress;
+    for (int i = 0; i < barWidth; ++i) {
+        if (i < pos) std::cout << "=";
+        else if (i == pos) std::cout << ">";
+        else std::cout << " ";
+    }
+    std::cout << "] " << int(progress * 100.0) << " %\r";
+    std::cout.flush();
+};
 
 gpt::Image gpt::Render(/*const gpt::Camera& camera, */const gpt::Scene& scene)
 {
     int index = 0;
     auto& camera = scene.GetCamera(index);
     gpt::Image image(camera.ImagePlane().NX(), camera.ImagePlane().NY());
-
-//    auto grsamples = samples;
 
     std::cerr << "Rendering with " << camera.SampleCount() << " samples for pixels." << '\n';
 
@@ -79,83 +109,20 @@ gpt::Image gpt::Render(/*const gpt::Camera& camera, */const gpt::Scene& scene)
     {
         rowBeginning += oneDown;
         auto pixelCenter = rowBeginning;
+
         for (int j = 0; j < camera.ImagePlane().NX(); j++)
         {
             pixelCenter += oneRight;
             auto pixelLocation = CalculatePixelLocation(camera, pixelCenter);
 
-            image.at(i, j) = RenderPixel(scene, camera, pixelLocation);
+            auto ray = gpt::Ray(camera.Position(), pixelLocation - camera.Position(), true);
+            auto color = Trace(scene, ray, 1, 5);
+
+            image.at(i, j) = glm::min(color, glm::vec3{255.f, 255.f, 255.f}) / 255.f;
         }
 
-        auto progress = i / (float)camera.ImagePlane().NY();
-
-        auto UpdateProgress = [](float progress)
-        {
-            int barWidth = 70;
-
-            std::cout << "[";
-            int pos = barWidth * progress;
-            for (int i = 0; i < barWidth; ++i) {
-                if (i < pos) std::cout << "=";
-                else if (i == pos) std::cout << ">";
-                else std::cout << " ";
-            }
-            std::cout << "] " << int(progress * 100.0) << " %\r";
-            std::cout.flush();
-        };
-
-        UpdateProgress(progress);
+        UpdateProgress(i / (float)camera.ImagePlane().NY());
     }
-    std::cout << std::endl;
 
     return image;
-}
-
-gpt::Camera gpt::LoadCamera(tinyxml2::XMLElement *element)
-{
-    int id;
-    if (element->QueryIntAttribute("id", &id) == tinyxml2::XML_NO_ATTRIBUTE){
-        std::cerr << "No such attribute as id" << '\n';
-        std::abort();
-    }
-
-    auto GetElem = [](tinyxml2::XMLElement* element)
-    {
-        glm::vec3 color;
-
-        std::istringstream ss {element->GetText()};
-        ss >> color.r;
-        ss >> color.g;
-        ss >> color.b;
-
-        return color;
-    };
-
-    glm::vec3 position = GetElem(element->FirstChildElement("Position"));
-    glm::vec3 gaze = GetElem(element->FirstChildElement("Gaze"));
-    glm::vec3 up = GetElem(element->FirstChildElement("Up"));
-
-    tinyxml2::XMLElement* elem;
-    int sampleCount = 1;
-
-    if ((elem = element->FirstChildElement("NumSamples")))
-    {
-        sampleCount = elem->IntText(1);
-    }
-
-    int focalDistance = 1;
-    if ((elem = element->FirstChildElement("FocusDistance"))){
-        focalDistance = elem->IntText(1);
-    }
-
-    float apertureSize = 0;
-    if ((elem = element->FirstChildElement("ApertureSize"))){
-        apertureSize = elem->FloatText(0);
-    }
-
-    gpt::ImagePlane plane = gpt::CreatePlane(element, focalDistance);
-
-    std::string name = element->FirstChildElement("ImageName")->GetText();
-
-    return gpt::Camera(plane, id, position, gaze, up, name, sampleCount, focalDistance, apertureSize);
 }

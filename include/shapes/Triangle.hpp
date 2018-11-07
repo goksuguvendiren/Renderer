@@ -2,8 +2,7 @@
 // Created by Göksu Güvendiren on 20/07/2018.
 //
 
-#ifndef RAYTRACER_TRIANGLE_HPP
-#define RAYTRACER_TRIANGLE_HPP
+#pragma once
 
 #include <vector>
 #include <tinyxml/tinyxml2.h>
@@ -26,7 +25,7 @@ namespace gpt
 
         public:
             Triangle() = default;
-            Triangle(int id, glm::vec3 a, glm::vec3 b, glm::vec3 c, int tid = -1, int tr_id = 1);
+            Triangle(int id, glm::vec3 a, glm::vec3 b, glm::vec3 c, const gpt::Material& m, int tid = -1, int tr_id = 1);
 
             Triangle(const glm::vec3 &pointA);
 
@@ -47,10 +46,6 @@ namespace gpt
             glm::vec3 PointC() const { return pointC; }
 
             bool isArtificial() const { return false; }
-
-            static std::vector<Triangle> Load(gpt::Scene& scene, tinyxml2::XMLElement* elem);
         };
     }
 }
-
-#endif //RAYTRACER_TRIANGLE_HPP
