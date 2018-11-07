@@ -14,6 +14,7 @@
 #include <map>
 #include <shapes/Mesh.hpp>
 #include "Camera.hpp"
+#include <memory>
 
 namespace gpt
 {
