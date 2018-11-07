@@ -31,7 +31,7 @@ namespace gpt
         glm::vec3   Normal() const { return normal; }
         glm::vec3   Position() const { return position; }
 
-        const gpt::Ray& Ray() const { return r; }
+        const gpt::Ray& GetRay() const { return r; }
 
         const gpt::Shape* Shape() const { return shape; }
         const gpt::Material&  Material() const;

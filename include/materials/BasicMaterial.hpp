@@ -29,6 +29,9 @@ namespace gpt
             {}
             ~BasicMaterial() override = default;
 
+            glm::vec3 Diffuse() const { return diffuse; }
+            glm::vec3 Specular() const { return specular; }
+
             glm::vec3 DiffuseColor(const gpt::HitInfo& hit, glm::vec3 direction, glm::vec3 intensity) const;
             glm::vec3 SpecularColor(const gpt::HitInfo& hit, glm::vec3 direction, glm::vec3 intensity) const ;
 

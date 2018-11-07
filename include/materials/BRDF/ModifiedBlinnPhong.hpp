@@ -20,18 +20,21 @@ namespace gpt
         class ModifiedBlinnPhong : public Material
         {
             BasicMaterial basic;
+            float exponent;
 
         public:
-            ModifiedBlinnPhong() : basic({0, 0, 0}, {0, 0, 0}, {0, 0, 0}) {}
-            ModifiedBlinnPhong(const BasicMaterial& basicMaterial) : basic(basicMaterial) {}
-            ModifiedBlinnPhong(const glm::vec3 &amb, const glm::vec3 &dif, const glm::vec3 &spe) : basic(amb, dif, spe)
+            ModifiedBlinnPhong() : basic({0, 0, 0}, {0, 0, 0}, {0, 0, 0}), exponent(0) {}
+            ModifiedBlinnPhong(const BasicMaterial& basicMaterial, float exp) : basic(basicMaterial), exponent(exp) {}
+            ModifiedBlinnPhong(const glm::vec3 &amb, const glm::vec3 &dif, const glm::vec3 &spe, float exp) : basic(amb, dif, spe), exponent(exp)
             {}
             ~ModifiedBlinnPhong() override = default;
 
 //            glm::vec3 DiffuseColor(const gpt::HitInfo& hit, glm::vec3 direction, glm::vec3 intensity) const;
 //            glm::vec3 SpecularColor(const gpt::HitInfo& hit, glm::vec3 direction, glm::vec3 intensity) const ;
 
-            glm::vec3 CalculateReflectance(const gpt::HitInfo& hit, const gpt::Light& light) const override;
+//            glm::vec3 CalculateReflectance(const gpt::HitInfo& hit, const gpt::Light& light, int recdepth) const override;
+            glm::vec3 CalculateReflectance(const Scene &scene, const gpt::HitInfo& hit, int recdepth) const override;
+
         };
     }
 }
