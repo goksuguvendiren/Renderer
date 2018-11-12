@@ -33,7 +33,7 @@ namespace gpt
 //            glm::vec3 SpecularColor(const gpt::HitInfo& hit, glm::vec3 direction, glm::vec3 intensity) const ;
 
 //            glm::vec3 CalculateReflectance(const gpt::HitInfo& hit, const gpt::Light& light, int recdepth) const override;
-            glm::vec3 CalculateReflectance(const Scene &scene, const gpt::HitInfo& hit, int recdepth) const override;
+            glm::vec3 CalculateReflectance(const glm::vec3& incoming, const glm::vec3& outgoing, const glm::vec3& normal) const override;
 
         };
     }

@@ -24,8 +24,8 @@ namespace gpt
             glm::vec3 specular;
 
         public:
-            BasicMaterial() : ambient({0, 0, 0}), diffuse({0, 0, 0}), specular({0, 0, 0}) {}
-            BasicMaterial(const glm::vec3 &amb, const glm::vec3 &dif, const glm::vec3 &spe) : ambient(amb), diffuse(dif), specular(spe)
+            BasicMaterial() : ambient({0, 0, 0}), diffuse({0, 0, 0}), specular({0, 0, 0}), Material(false) {}
+            BasicMaterial(const glm::vec3 &amb, const glm::vec3 &dif, const glm::vec3 &spe) : ambient(amb), diffuse(dif), specular(spe), Material(false)
             {}
             ~BasicMaterial() override = default;
 
@@ -35,7 +35,7 @@ namespace gpt
             glm::vec3 DiffuseColor(const gpt::HitInfo& hit, glm::vec3 direction, glm::vec3 intensity) const;
             glm::vec3 SpecularColor(const gpt::HitInfo& hit, glm::vec3 direction, glm::vec3 intensity) const ;
 
-            glm::vec3 CalculateReflectance(const Scene &scene, const gpt::HitInfo& hit, int recdepth) const override;
+            glm::vec3 CalculateReflectance(const glm::vec3& incoming, const glm::vec3& outgoing, const glm::vec3& normal) const override;
         };
     }
 }

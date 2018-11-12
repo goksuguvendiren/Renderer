@@ -21,8 +21,14 @@ namespace gpt
 
     class Material
     {
+        bool terminate = false;
+
+    protected:
+        Material() = default;
+        explicit Material(bool term) : terminate(term) {}
     public:
-        virtual glm::vec3 CalculateReflectance(const Scene &scene, const gpt::HitInfo& hit, int recdepth) const = 0;
+        virtual glm::vec3 CalculateReflectance(const glm::vec3& incoming, const glm::vec3& outgoing, const glm::vec3& normal) const = 0;
         virtual ~Material() = default;
+        bool Terminate() const { return terminate; }
     };
 }

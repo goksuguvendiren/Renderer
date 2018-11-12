@@ -35,7 +35,8 @@ namespace
     {
         auto tmp = elem->FirstChildElement("Radiance");
 
-        if (!tmp) {
+        if (!tmp)
+        {
             throw std::runtime_error("Not an emitting material");
         }
 

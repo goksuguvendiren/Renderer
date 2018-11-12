@@ -4,7 +4,7 @@
 
 #include "materials/EmittingMaterial.hpp"
 
-glm::vec3 gpt::materials::EmittingMaterial::CalculateReflectance(const Scene &scene, const gpt::HitInfo& hit, int recdepth) const
+glm::vec3 gpt::materials::EmittingMaterial::CalculateReflectance(const glm::vec3& incoming, const glm::vec3& outgoing, const glm::vec3& normal) const
 {
     return radiance;
 }

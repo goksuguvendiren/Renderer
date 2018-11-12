@@ -1,9 +1,9 @@
 <Scene>
     <MaxRecursionDepth>5</MaxRecursionDepth>
 
-    <BackgroundColor>0 0 0</BackgroundColor>
+    <BackgroundColor>50 50 50</BackgroundColor>
 
-    <ShadowRayEpsilon>1e-3</ShadowRayEpsilon>
+    <ShadowRayEpsilon>5e-4</ShadowRayEpsilon>
 
     <IntersectionTestEpsilon>1e-4</IntersectionTestEpsilon>
 
@@ -25,10 +25,10 @@
 	</Camera>
 
 	<Lights>
-        <PointLight id="1">
-            <Position>0 4.5 0</Position>
+     <!--    <PointLight id="1">
+            <Position>0 4 0</Position>
             <Intensity>15000 15000 25000</Intensity>
-        </PointLight>
+        </PointLight> -->
     </Lights>
 
     <BRDFs>
@@ -46,7 +46,7 @@
         <Material id="2" BRDF="1" Type="BRDFMat">
             <AmbientReflectance>1 0 0</AmbientReflectance>
             <DiffuseReflectance>1 0 0</DiffuseReflectance>
-            <SpecularReflectance>0 0 0</SpecularReflectance>
+            <SpecularReflectance>1 1 1</SpecularReflectance>
         </Material>
         <Material id="3" BRDF="1" Type="BRDFMat">
             <AmbientReflectance>0 0 1</AmbientReflectance>
@@ -154,13 +154,13 @@
             <Center>10</Center>
             <Radius>4</Radius>
         </Sphere>
-        <!-- <Mesh id="9">
+        <Mesh id="9">
             <Material>7</Material>
             <Transformations>t3 s2 t4</Transformations>
             <Faces>
                 7 3 4
                 4 8 7
             </Faces>
-        </Mesh> -->
+        </Mesh>
     </Objects>
 </Scene>

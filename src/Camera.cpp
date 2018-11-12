@@ -8,65 +8,51 @@
 #include <sstream>
 
 #include "Utils.hpp"
-#include <random>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtc/constants.hpp>
-
-std::mt19937 hemisphere_seed;
-
-glm::vec3 sample_hemisphere(const glm::vec3& normal)
-{
-    static std::uniform_real_distribution<float> asd(0, 1);
-    static std::uniform_real_distribution<float> asd1(0, 1);
-    float sample1 = asd(hemisphere_seed);
-    float sample2 = asd1(hemisphere_seed);
-
-    auto dir = glm::vec3{cos(2 * glm::pi<float>() * sample2) * glm::sqrt(1 - glm::pow(sample1, 2.f)),
-                         sample1,
-                         sin(2 * glm::pi<float>() * sample2) * glm::sqrt(1 - glm::pow(sample2, 2.f))};
-
-    auto c = glm::cross(glm::vec3{0.f, 1.f, 0.f}, normal);
-    auto angle = glm::acos(glm::dot(glm::vec3{0, 1, 0}, normal));
-    auto res = glm::angleAxis(angle, c) * glm::normalize(dir);
-
-    const float r = std::sqrt(sample1);
-    const float theta = 2 * glm::pi<float>() * sample2;
-
-    const float x = r * std::cos(theta);
-    const float y = r * std::sin(theta);
-
-    return glm::vec3(x, y, std::sqrt(std::max(0.0f, 1 - sample1)));
-
-    if (normal == glm::vec3{0, -1, 0})
-    {
-        return -res;
-    }
-    return res;
-}
-
 
 glm::vec3 Trace(const gpt::Scene& scene, const gpt::Ray& ray, int recursionDepth, int maxRecDepth)
 {
-    glm::vec3 color = {0, 0, 0};
+    glm::vec3 color = glm::vec3{0.f, 0.f, 0.f};
+
+    if (recursionDepth >= maxRecDepth) return color;
 
     boost::optional<gpt::HitInfo> hit = scene.Hit(ray);
 
     if (hit)
     {
-        color = hit->Material().CalculateReflectance(scene, *hit, 1);
+        if (hit->Material().Terminate()) return hit->Material().CalculateReflectance(-ray.Direction(), {}, hit->Normal());
+
+        auto direction = gpt::utils::sample_hemisphere(hit->Normal());
+
+        for (auto& light : scene.Lights())
+        {
+            auto lightDirection = light->Direction(hit->Position());
+            auto normalLightDirection = glm::normalize(lightDirection);
+            gpt::Ray shadowRay(hit->Position() + (scene.ShadowRayEpsilon() * hit->Normal()), normalLightDirection);
+
+            boost::optional<gpt::HitInfo> sh;
+            if ((sh = scene.Hit(shadowRay)))
+            {
+                if (sh->Param() < glm::length(lightDirection))
+                    continue;
+            }
+
+            color += hit->Material().CalculateReflectance(-ray.Direction(), lightDirection, hit->Normal()) * light->Intensity(lightDirection);
+        }
+
+//        color += hit->Material().CalculateReflectance(-ray.Direction(), lightDirection, hit->Normal());
+//
+//        color = hit->Material().CalculateReflectance(-ray.Direction(), direction, hit->Normal());
+
+        gpt::Ray monte_carlo_ray(hit->Position() + (scene.ShadowRayEpsilon() * direction), direction, false);
+        auto sampledColor = Trace(scene, monte_carlo_ray, recursionDepth + 1, maxRecDepth);
+
+        return color + hit->Material().CalculateReflectance(-ray.Direction(), direction, hit->Normal()) * sampledColor;
     }
     else
     {
         color = scene.BackgroundColor();
         return color;
     }
-
-    if (recursionDepth >= maxRecDepth) return color;
-
-    // otherwise, redirect the ray :
-    auto direction = sample_hemisphere(hit->Normal());
-    gpt::Ray monte_carlo_ray(hit->Position() + (scene.ShadowRayEpsilon() * direction), direction, false);
-    return color + Trace(scene, monte_carlo_ray, recursionDepth++, maxRecDepth);
 }
 
 glm::vec3 CalculatePixelLocation(const gpt::Camera& camera, glm::vec3 pixelCenter)
@@ -116,8 +102,12 @@ gpt::Image gpt::Render(/*const gpt::Camera& camera, */const gpt::Scene& scene)
             auto pixelLocation = CalculatePixelLocation(camera, pixelCenter);
 
             auto ray = gpt::Ray(camera.Position(), pixelLocation - camera.Position(), true);
-            auto color = Trace(scene, ray, 1, 5);
-
+            glm::vec3 color = {0, 0, 0};
+            for (int k = 0; k < 20; k++)
+            {
+                color += Trace(scene, ray, 0, 2);
+            }
+            color /= 20.0f;
             image.at(i, j) = glm::min(color, glm::vec3{255.f, 255.f, 255.f}) / 255.f;
         }
 

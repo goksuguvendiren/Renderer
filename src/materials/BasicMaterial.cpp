@@ -5,6 +5,7 @@
 #include <materials/BasicMaterial.hpp>
 #include <HitInfo.hpp>
 #include <lights/Light.hpp>
+#include <glm/gtc/constants.hpp>
 
 //glm::vec3 Fund(const gpt::HitInfo& hit, const gpt::Light& light, glm::vec3 diffuse)
 //{
@@ -43,28 +44,49 @@ glm::vec3 gpt::materials::BasicMaterial::DiffuseColor(const gpt::HitInfo& hit, g
 //    return color;
 //}
 
-glm::vec3 gpt::materials::BasicMaterial::CalculateReflectance(const Scene &scene, const gpt::HitInfo& hit, int recdepth) const
+glm::vec3 gpt::materials::BasicMaterial::CalculateReflectance(const glm::vec3& incoming, const glm::vec3& outgoing, const glm::vec3& normal) const
 {
-    glm::vec3 color = ambient * scene.AmbientColor();
-
-    for (auto& light : scene.Lights())
-    {
-        auto direction = light->Direction(hit.Position());
-        gpt::Ray shadowRay(hit.Position() + (glm::vec3{1e-3, 1e-3, 1e-3} * glm::normalize(direction)), glm::normalize(direction));
-
-        boost::optional<HitInfo> sh;
-        if ((sh = scene.Hit(shadowRay)))
-        {
-            if (sh->Param() < glm::length(direction))
-            continue;
-        }
-
-        auto intensity = light->Intensity(direction);
+//    glm::vec3 color = ambient * scene.AmbientColor();
 //
-        color += DiffuseColor(hit, direction, intensity);
-//        color += SpecularColor(hit)
-    }
+//    for (auto& light : scene.Lights())
+//    {
+//        auto direction = light->Direction(hit.Position());
+//        gpt::Ray shadowRay(hit.Position() + (glm::vec3{1e-3, 1e-3, 1e-3} * glm::normalize(direction)), glm::normalize(direction));
+//
+//        boost::optional<HitInfo> sh;
+//        if ((sh = scene.Hit(shadowRay)))
+//        {
+//            if (sh->Param() < glm::length(direction))
+//            continue;
+//        }
+//
+//        auto intensity = light->Intensity(direction);
+////
+//        color += DiffuseColor(hit, direction, intensity);
+////        color += SpecularColor(hit)
+//    }
+//
+//    return color;
 
-    return color;
+    glm::vec3 w_i  = glm::normalize(incoming);
+    glm::vec3 w_o  = glm::normalize(outgoing);
+    glm::vec3 half = glm::normalize(w_i + w_o);
+
+    float theta_h   = std::max(0.f, glm::dot(half, normal));
+//    float theta_i = glm::dot(hit.Normal(), w_i);
+
+    glm::vec3 diff_term = diffuse / glm::pi<float>();
+    glm::vec3 spec_term = (specular * std::pow(theta_h, 100.f)) / glm::pi<float>();
+
+//    if (normalized)
+//    {
+//        spec_term *= (exponent + 8.f) / 8.f;
+//        spec_term /= glm::pi<float>();
+//        diff_term /= glm::pi<float>();
+//    }
+
+    glm::vec3 color = diff_term + spec_term;
+
+    return color;// * theta_i;
 
 }
