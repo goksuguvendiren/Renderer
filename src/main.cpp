@@ -7,23 +7,15 @@
 #include <opencv2/opencv.hpp>
 #include <loaders/xml_loader.hpp>
 
+static_assert(sizeof(glm::vec3) == sizeof(float) * 3, "glm::vec3's size is not 3 float!");
+
 int main()
 {
     gpt::Scene scene = load_scene("/Users/goksu/Documents/Renderer/inputs/cornellbox_ldr.xml");
 
     auto image = gpt::Render(scene);
-    cv::Mat im = cv::Mat(image.Height(), image.Width(), CV_32FC3);
-
-    for (int i = 0; i < image.Height(); i++)
-    {
-        for (int j = 0; j < image.Width(); j++)
-        {
-            // ATTENTION : OpenCV expects BGR color space
-            im.at<cv::Vec3f>(i, j)[0] = image.at(i, j).b;// / 255;
-            im.at<cv::Vec3f>(i, j)[1] = image.at(i, j).g;// / 255;
-            im.at<cv::Vec3f>(i, j)[2] = image.at(i, j).r;// / 255;
-        }
-    }
+    cv::Mat im = cv::Mat(image.Height(), image.Width(), CV_32FC3, (void*)&(image.Data()[0].x));
+    cv::cvtColor(im, im, CV_BGR2RGB);
 
     cv::imshow("result", im);
     cv::waitKey();

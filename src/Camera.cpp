@@ -6,14 +6,13 @@
 #include "Scene.hpp"
 #include <iostream>
 #include <sstream>
+#include <opencv/cv.hpp>
 
 #include "Utils.hpp"
 
 glm::vec3 Trace(const gpt::Scene& scene, const gpt::Ray& ray, int recursionDepth, int maxRecDepth)
 {
     glm::vec3 color = glm::vec3{0.f, 0.f, 0.f};
-
-    if (recursionDepth >= maxRecDepth) return color;
 
     boost::optional<gpt::HitInfo> hit = scene.Hit(ray);
 
@@ -39,9 +38,7 @@ glm::vec3 Trace(const gpt::Scene& scene, const gpt::Ray& ray, int recursionDepth
             color += hit->Material().CalculateReflectance(-ray.Direction(), lightDirection, hit->Normal()) * light->Intensity(lightDirection);
         }
 
-//        color += hit->Material().CalculateReflectance(-ray.Direction(), lightDirection, hit->Normal());
-//
-//        color = hit->Material().CalculateReflectance(-ray.Direction(), direction, hit->Normal());
+        if (recursionDepth >= maxRecDepth) return color;
 
         gpt::Ray monte_carlo_ray(hit->Position() + (scene.ShadowRayEpsilon() * direction), direction, false);
         auto sampledColor = Trace(scene, monte_carlo_ray, recursionDepth + 1, maxRecDepth);
@@ -55,7 +52,7 @@ glm::vec3 Trace(const gpt::Scene& scene, const gpt::Ray& ray, int recursionDepth
     }
 }
 
-glm::vec3 CalculatePixelLocation(const gpt::Camera& camera, glm::vec3 pixelCenter)
+glm::vec3 gpt::CalculatePixelLocation(const gpt::Camera& camera, glm::vec3 pixelCenter)
 {
     return pixelCenter;
 }
@@ -75,13 +72,9 @@ void UpdateProgress(float progress)
     std::cout.flush();
 };
 
-gpt::Image gpt::Render(/*const gpt::Camera& camera, */const gpt::Scene& scene)
+gpt::Image SubRender(const gpt::Scene& scene, const gpt::Camera& camera)
 {
-    int index = 0;
-    auto& camera = scene.GetCamera(index);
     gpt::Image image(camera.ImagePlane().NX(), camera.ImagePlane().NY());
-
-    std::cerr << "Rendering with " << camera.SampleCount() << " samples for pixels." << '\n';
 
     auto oneRight = camera.ImagePlane().PixelWidth() * camera.Right();
     auto oneDown  = -camera.ImagePlane().PixelHeight() * camera.Up();
@@ -103,19 +96,42 @@ gpt::Image gpt::Render(/*const gpt::Camera& camera, */const gpt::Scene& scene)
 
             auto ray = gpt::Ray(camera.Position(), pixelLocation - camera.Position(), true);
 
-            int numOfIterations = 5;
-
-            glm::vec3 color = {0, 0, 0};
-            for (int k = 0; k < numOfIterations; k++)
-            {
-                color += Trace(scene, ray, 0, 2);
-            }
-            color /= (float)numOfIterations;
-            image.at(i, j) = glm::min(color, glm::vec3{255.f, 255.f, 255.f}) / 255.f;
+            glm::vec3 color = Trace(scene, ray, 0, 1);
+            image.at(i, j) = color / 255.f;//glm::min(color, glm::vec3{255.f, 255.f, 255.f}) / 255.f;
         }
 
         UpdateProgress(i / (float)camera.ImagePlane().NY());
     }
-
+    std::cerr << '\n';
     return image;
+}
+
+gpt::Image gpt::Render(const gpt::Scene& scene)
+{
+    int index = 0;
+    auto& camera = scene.GetCamera(index);
+    gpt::Image accImage(camera.ImagePlane().NX(), camera.ImagePlane().NY());
+    gpt::Image resultImage(camera.ImagePlane().NX(), camera.ImagePlane().NY());
+
+
+    auto key = 0;
+    auto frames = 0;
+    while (key != 27)
+    {
+        std::cerr << "Rendering the frame: " << frames << '\n';
+
+        auto newimage = SubRender(scene, camera);
+        accImage += newimage;
+        resultImage = accImage;
+
+        cv::Mat im = cv::Mat(resultImage.Height(), resultImage.Width(), CV_32FC3, (void*)&(resultImage.Data()[0].x));
+        cv::cvtColor(im, im, CV_RGB2BGR);
+
+        im /= ++frames;
+        cv::imshow("frame", im);
+        key = cv::waitKey(10);
+
+        std::cerr << "key is : " << key << '\n';
+    }
+    return SubRender(scene, camera);
 }

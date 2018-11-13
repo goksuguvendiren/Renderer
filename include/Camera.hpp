@@ -14,7 +14,8 @@ namespace gpt
     class Scene;
     class Camera;
 
-    Image Render(/*const gpt::Camera& camera,*/ const gpt::Scene& scene);
+    Image Render(const gpt::Scene& scene);
+    glm::vec3 CalculatePixelLocation(const gpt::Camera& camera, glm::vec3 pixelCenter);
 
     class Camera
     {
@@ -57,7 +58,6 @@ namespace gpt
         };
 
 //        glm::vec3 GetCameraPosition() const;
-        glm::vec3 RenderPixel(const glm::vec3& pixelcenter) const;
 
         glm::vec3 Position() const { return position; }
         glm::vec3 Up() const { return up; }
@@ -70,7 +70,6 @@ namespace gpt
         gpt::ImagePlane ImagePlane() const { return imagePlane; }
 
         glm::vec3 PlanePosition() const { return planePosition; }
-        glm::vec3 GetPixelLocation(int i, int j) const;
 
         void SetSampleCount(int numsamp) { sampleCount = numsamp; }
     };

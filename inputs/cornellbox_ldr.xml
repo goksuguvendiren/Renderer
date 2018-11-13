@@ -1,7 +1,7 @@
 <Scene>
     <MaxRecursionDepth>5</MaxRecursionDepth>
 
-    <BackgroundColor>50 50 50</BackgroundColor>
+    <BackgroundColor>0 0 0</BackgroundColor>
 
     <ShadowRayEpsilon>5e-4</ShadowRayEpsilon>
 
@@ -25,10 +25,10 @@
 	</Camera>
 
 	<Lights>
-        <PointLight id="1">
+     <!--    <PointLight id="1">
             <Position>0 4 0</Position>
             <Intensity>15000 15000 25000</Intensity>
-        </PointLight>
+        </PointLight> -->
     </Lights>
 
     <BRDFs>
