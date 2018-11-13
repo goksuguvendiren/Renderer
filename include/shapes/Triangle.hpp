@@ -21,19 +21,19 @@ namespace gpt
 
             glm::vec3 surfNormal;
 
-            int id;
-
         public:
-            Triangle() = default;
-            Triangle(int id, glm::vec3 a, glm::vec3 b, glm::vec3 c, const gpt::Material& m, int tid = -1, int tr_id = 1);
+            Triangle(int id, const glm::vec3 &a, glm::vec3 b, glm::vec3 c, const gpt::Material &m, int tid = -1,
+                     int tr_id = 1) : Shape(m, id), pointA(a), pointB(b), pointC(c)
+            {
+                surfNormal = glm::normalize(glm::cross(pointB - pointA, pointC - pointA));
+            }
 
-            Triangle(const glm::vec3 &pointA);
+//            Triangle(const glm::vec3 &pointA);
 
-            ~Triangle() = default;
+            ~Triangle() override = default;
 
-            boost::optional<HitInfo> Hit (const Ray& ray) const;
+            boost::optional<HitInfo> Hit (const Ray& ray) const override;
 //            boost::optional<float>   ShadowHit(const Ray& ray) const;
-            int ID() const { return id; }
 
             auto Normal() const { return surfNormal; }
 

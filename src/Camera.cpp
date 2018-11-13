@@ -102,12 +102,15 @@ gpt::Image gpt::Render(/*const gpt::Camera& camera, */const gpt::Scene& scene)
             auto pixelLocation = CalculatePixelLocation(camera, pixelCenter);
 
             auto ray = gpt::Ray(camera.Position(), pixelLocation - camera.Position(), true);
+
+            int numOfIterations = 5;
+
             glm::vec3 color = {0, 0, 0};
-            for (int k = 0; k < 20; k++)
+            for (int k = 0; k < numOfIterations; k++)
             {
                 color += Trace(scene, ray, 0, 2);
             }
-            color /= 20.0f;
+            color /= (float)numOfIterations;
             image.at(i, j) = glm::min(color, glm::vec3{255.f, 255.f, 255.f}) / 255.f;
         }
 

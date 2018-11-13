@@ -15,7 +15,6 @@ namespace gpt
     {
         class Sphere : public Shape
         {
-            int id;
             float radius;
             glm::vec3 center;
 
@@ -24,7 +23,7 @@ namespace gpt
             glm::mat4 inverse_transpose_transf;
 
         public:
-            Sphere(int sid, float rd, glm::vec3 c, const gpt::Material& m) : id(sid), radius(rd), center(c), Shape(m)
+            Sphere(int sid, float rd, glm::vec3 c, const gpt::Material& m) : radius(rd), center(c), Shape(m, sid)
             {
                 transformation_matrix       = glm::mat4(1.0f);
                 inverse_transf              = glm::mat4(1.0f);
@@ -42,7 +41,6 @@ namespace gpt
 
             boost::optional<HitInfo> Hit(const Ray &r) const;
 //            boost::optional<float>   ShadowHit(const Ray& ray) const;
-            int ID() const { return id; }
         };
     }
 }

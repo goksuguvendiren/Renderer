@@ -249,7 +249,7 @@ namespace
                 matrix = m * matrix;
             }
 
-            gpt::shapes::Mesh msh{context.GetMaterial(matID)};
+            gpt::shapes::Mesh msh{context.GetMaterial(matID), id};
             auto FaceData = child->FirstChildElement("Faces");
             std::istringstream stream { FaceData->GetText() };
             int vertexOffset = 0;
@@ -261,9 +261,8 @@ namespace
                 ;
 
             boost::optional<gpt::shapes::Triangle> tr;
-            int index = 1;
 
-            while((tr = GetFace(context, stream, vertexOffset, texCoordOffset, matrix, matID, index++, texID)))
+            while((tr = GetFace(context, stream, vertexOffset, texCoordOffset, matrix, matID, id, texID)))
             {
                 auto tri = *tr;
                 msh.AddFace(std::move(*tr));

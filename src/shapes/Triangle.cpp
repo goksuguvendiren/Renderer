@@ -16,6 +16,11 @@ inline float determinant(const glm::vec3& col1,
 
 }
 
+inline bool isBackFace(const glm::vec3& surfaceNormal, const glm::vec3& direction)
+{
+    return glm::dot(surfaceNormal, direction) < 0;
+}
+
 boost::optional<gpt::HitInfo> gpt::shapes::Triangle::Hit (const gpt::Ray& ray) const
 {
     glm::vec3 col1 = pointA - pointB;
@@ -23,6 +28,7 @@ boost::optional<gpt::HitInfo> gpt::shapes::Triangle::Hit (const gpt::Ray& ray) c
     glm::vec3 col3 = ray.Direction();
     glm::vec3 col4 = pointA - ray.Origin();
 
+    auto epsilon = -1e4;
     auto detA  = determinant(col1, col2, col3);
     if (detA == 0) return boost::none;
 
@@ -32,20 +38,13 @@ boost::optional<gpt::HitInfo> gpt::shapes::Triangle::Hit (const gpt::Ray& ray) c
     auto alpha = 1 - beta - gamma;
 
     if (alpha < -0.0001 || gamma < -0.0001 || beta < -0.0001 || param < -0.0001) return boost::none;
+    if (ray.IsPrimary() && !isBackFace(surfNormal, ray.Direction()))
+    {
+        return boost::none;
+    }
 
     auto point = ray.Origin() + param * ray.Direction();
-
     glm::vec3 normal = glm::normalize(alpha * surfNormal + beta * surfNormal + gamma * surfNormal);
 
     return gpt::HitInfo(normal, point, ray, this, param);
-}
-
-gpt::shapes::Triangle::Triangle(int i, glm::vec3 a, glm::vec3 b, glm::vec3 c, const gpt::Material& m, int tid, int tr_id) : Shape(m)
-{
-    id = i;
-    pointA = a;
-    pointB = b;
-    pointC = c;
-
-    surfNormal = glm::normalize(glm::cross(pointB - pointA, pointC - pointA));
 }

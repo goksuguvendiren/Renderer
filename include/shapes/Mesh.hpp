@@ -20,7 +20,7 @@ namespace gpt
 
         public:
 
-            Mesh(const gpt::Material& m) : Shape(m) {}
+            Mesh(const gpt::Material& m, int id) : Shape(m, id) {}
             Mesh(const Mesh& m) = delete;
             Mesh(Mesh&& m) = default;
 
