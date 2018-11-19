@@ -125,14 +125,14 @@
             <Material>2</Material>
             <Faces>
                 8 4 1
-                8 1 5		
+                8 1 5
             </Faces>
         </Mesh>
         <Mesh id="5">
             <Material>3</Material>
             <Faces>
                 2 3 7
-                2 7 6
+                7 6 2
             </Faces>
         </Mesh>
         <Mesh id="6">

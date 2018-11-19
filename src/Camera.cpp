@@ -20,8 +20,6 @@ glm::vec3 Trace(const gpt::Scene& scene, const gpt::Ray& ray, int recursionDepth
     {
         if (hit->Material().Terminate()) return hit->Material().CalculateReflectance(-ray.Direction(), {}, hit->Normal());
 
-        auto direction = gpt::utils::sample_hemisphere(hit->Normal());
-
         for (auto& light : scene.Lights())
         {
             auto lightDirection = light->Direction(hit->Position());
@@ -40,6 +38,7 @@ glm::vec3 Trace(const gpt::Scene& scene, const gpt::Ray& ray, int recursionDepth
 
         if (recursionDepth >= maxRecDepth) return color;
 
+        auto direction = gpt::utils::sample_hemisphere(hit->Normal());
         gpt::Ray monte_carlo_ray(hit->Position() + (scene.ShadowRayEpsilon() * direction), direction, false);
         auto sampledColor = Trace(scene, monte_carlo_ray, recursionDepth + 1, maxRecDepth);
 
@@ -47,6 +46,10 @@ glm::vec3 Trace(const gpt::Scene& scene, const gpt::Ray& ray, int recursionDepth
     }
     else
     {
+        if (!ray.IsPrimary())
+        {
+            volatile int x = 10;
+        }
         color = scene.BackgroundColor();
         return color;
     }
@@ -96,7 +99,7 @@ gpt::Image SubRender(const gpt::Scene& scene, const gpt::Camera& camera)
 
             auto ray = gpt::Ray(camera.Position(), pixelLocation - camera.Position(), true);
 
-            glm::vec3 color = Trace(scene, ray, 0, 1);
+            glm::vec3 color = Trace(scene, ray, 0, 4);
             image.at(i, j) = color / 255.f;//glm::min(color, glm::vec3{255.f, 255.f, 255.f}) / 255.f;
         }
 
@@ -112,7 +115,6 @@ gpt::Image gpt::Render(const gpt::Scene& scene)
     auto& camera = scene.GetCamera(index);
     gpt::Image accImage(camera.ImagePlane().NX(), camera.ImagePlane().NY());
     gpt::Image resultImage(camera.ImagePlane().NX(), camera.ImagePlane().NY());
-
 
     auto key = 0;
     auto frames = 0;
@@ -133,5 +135,6 @@ gpt::Image gpt::Render(const gpt::Scene& scene)
 
         std::cerr << "key is : " << key << '\n';
     }
-    return SubRender(scene, camera);
+
+    return resultImage;
 }

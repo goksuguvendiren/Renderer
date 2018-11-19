@@ -16,36 +16,46 @@ namespace gpt
 {
     namespace utils
     {
+        inline float sample_float()
+        {
+            static std::mt19937 float_seed;
+            static std::uniform_real_distribution<float> generator;
+
+            return generator(float_seed);
+        }
+
+        inline glm::vec3 sample_hemisphere(float sample1, float sample2)
+        {
+            auto radius = std::sqrt(sample1);
+            auto theta  = 2 * glm::pi<float>() * sample2;
+
+            auto x = radius * glm::cos(theta);
+            auto y = radius * glm::sin(theta);
+
+            return glm::vec3(x, y, std::sqrt(std::max(0.0f, 1 - sample1)));
+        }
+
         inline glm::vec3 sample_hemisphere(const glm::vec3& normal)
         {
             static std::mt19937 hemisphere_seed;
 
-            static std::uniform_real_distribution<float> asd(0, 1);
-            static std::uniform_real_distribution<float> asd1(0, 1);
-            float sample1 = asd(hemisphere_seed);
-            float sample2 = asd1(hemisphere_seed);
+            static std::uniform_real_distribution<float> distribution1(0, 1);
+            static std::uniform_real_distribution<float> distribution2(0, 1);
+            float sample1 = distribution1(hemisphere_seed);
+            float sample2 = distribution2(hemisphere_seed);
 
-            auto dir = glm::vec3{cos(2 * glm::pi<float>() * sample2) * glm::sqrt(1 - glm::pow(sample1, 2.f)),
-                                 sample1,
-                                 sin(2 * glm::pi<float>() * sample2) * glm::sqrt(1 - glm::pow(sample2, 2.f))};
+            auto baseSample = sample_hemisphere(sample1, sample2);
 
-            auto c = glm::cross(glm::vec3{0.f, 1.f, 0.f}, normal);
-            auto angle = glm::acos(glm::dot(glm::vec3{0, 1, 0}, normal));
-            auto res = glm::angleAxis(angle, c) * glm::normalize(dir);
-
-            const float r = std::sqrt(sample1);
-            const float theta = 2 * glm::pi<float>() * sample2;
-
-            const float x = r * std::cos(theta);
-            const float y = r * std::sin(theta);
-
-            return glm::normalize(glm::vec3(x, y, std::sqrt(std::max(0.0f, 1 - sample1))));
-
-            if (normal == glm::vec3{0, -1, 0})
+            if (normal == glm::vec3{0, 0, -1})
             {
-                return -res;
+                return -baseSample;
             }
-            return res;
+
+            auto axis = glm::cross(glm::vec3(0, 0, 1), normal);
+            auto angle = std::acos(glm::dot(normal, glm::vec3(0, 0, 1)));
+
+            auto rotate = glm::angleAxis(angle, axis);
+            return rotate * baseSample;
         }
 
         inline int GetInt(std::istringstream& stream)
