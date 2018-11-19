@@ -46,10 +46,6 @@ glm::vec3 Trace(const gpt::Scene& scene, const gpt::Ray& ray, int recursionDepth
     }
     else
     {
-        if (!ray.IsPrimary())
-        {
-            volatile int x = 10;
-        }
         color = scene.BackgroundColor();
         return color;
     }
@@ -57,7 +53,14 @@ glm::vec3 Trace(const gpt::Scene& scene, const gpt::Ray& ray, int recursionDepth
 
 glm::vec3 gpt::CalculatePixelLocation(const gpt::Camera& camera, glm::vec3 pixelCenter)
 {
-    return pixelCenter;
+    auto random_x = utils::sample_float() - 0.5f;
+    auto random_y = utils::sample_float() - 0.5f;
+
+    auto oneRight = camera.ImagePlane().PixelWidth() * camera.Right();
+    auto oneDown  = -camera.ImagePlane().PixelHeight() * camera.Up();
+
+    auto samplePixel = pixelCenter + oneRight * random_x + oneDown * random_y;
+    return samplePixel;
 }
 
 void UpdateProgress(float progress)
@@ -84,7 +87,7 @@ gpt::Image SubRender(const gpt::Scene& scene, const gpt::Camera& camera)
 
     auto pixLocation = camera.PlanePosition();  // the position of the top left corner of the image plane.
     pixLocation -= oneRight * 0.5f;             // move the vector half a pixel left and up so that it will be easier in the loop.
-    pixLocation -= oneDown * 0.5f;
+    pixLocation -= oneDown  * 0.5f;
 
     auto rowBeginning = pixLocation;
     for (int i = 0; i < camera.ImagePlane().NY(); i++)
@@ -96,11 +99,10 @@ gpt::Image SubRender(const gpt::Scene& scene, const gpt::Camera& camera)
         {
             pixelCenter += oneRight;
             auto pixelLocation = CalculatePixelLocation(camera, pixelCenter);
-
             auto ray = gpt::Ray(camera.Position(), pixelLocation - camera.Position(), true);
 
             glm::vec3 color = Trace(scene, ray, 0, 4);
-            image.at(i, j) = color / 255.f;//glm::min(color, glm::vec3{255.f, 255.f, 255.f}) / 255.f;
+            image.at(i, j) = color / 255.f; //glm::min(color, glm::vec3{255.f, 255.f, 255.f}) / 255.f;
         }
 
         UpdateProgress(i / (float)camera.ImagePlane().NY());
