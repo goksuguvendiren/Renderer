@@ -2,18 +2,19 @@
 // Created by Göksu Güvendiren on 21/07/2018.
 //
 
-#include "Camera.hpp"
-#include "Scene.hpp"
 #include <iostream>
 #include <sstream>
 #include <opencv/cv.hpp>
 
 #include "Utils.hpp"
+#include "Camera.hpp"
+#include "Scene.hpp"
 
 glm::vec3 Trace(const gpt::Scene& scene, const gpt::Ray& ray, int recursionDepth, int maxRecDepth)
 {
     glm::vec3 color = glm::vec3{0.f, 0.f, 0.f};
 
+//    boost::optional<gpt::HitInfo> hit = scene.HitNaive(ray);
     boost::optional<gpt::HitInfo> hit = scene.Hit(ray);
 
     if (hit)
@@ -120,11 +121,17 @@ gpt::Image gpt::Render(const gpt::Scene& scene)
 
     auto key = 0;
     auto frames = 0;
-    while (key != 27)
+    auto windowAlive = true;
+    while (windowAlive)
     {
+        auto begin = std::chrono::system_clock::now();
         std::cerr << "Rendering the frame: " << frames << '\n';
 
         auto newimage = SubRender(scene, camera);
+        auto end = std::chrono::system_clock::now();
+
+        std::cerr << "Rendered in : " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms." << '\n';
+
         accImage += newimage;
         resultImage = accImage;
 
@@ -133,9 +140,10 @@ gpt::Image gpt::Render(const gpt::Scene& scene)
 
         im /= ++frames;
         cv::imshow("frame", im);
+        cv::imwrite("frame.png", im);
         key = cv::waitKey(10);
 
-        std::cerr << "key is : " << key << '\n';
+        windowAlive = key != 27;
     }
 
     return resultImage;

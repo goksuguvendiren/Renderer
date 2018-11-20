@@ -44,7 +44,7 @@ set(SOURCE_FILES
     include/materials/BasicMaterial.hpp
     src/materials/BasicMaterial.cpp 
     include/materials/BRDF/ModifiedBlinnPhong.hpp 
-    src/materials/BRDF/ModifiedBlinnPhong.cpp)
+    src/materials/BRDF/ModifiedBlinnPhong.cpp include/AABB.hpp include/box.hpp src/AABB.cpp src/shapes/Shape.cpp)
 
 add_executable(RayTracer ${SOURCE_FILES})
 

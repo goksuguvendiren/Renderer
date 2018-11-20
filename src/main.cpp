@@ -2,7 +2,7 @@
 #include <string>
 #include <shapes/Sphere.hpp>
 #include <Scene.hpp>
-#include <Camera.hpp>
+#include <camera.hpp>
 
 #include <opencv2/opencv.hpp>
 #include <loaders/xml_loader.hpp>

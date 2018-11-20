@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <tinyxml/tinyxml2.h>
+#include <AABB.hpp>
 #include "shapes/Shape.hpp"
 
 namespace gpt
@@ -22,24 +23,18 @@ namespace gpt
             glm::vec3 surfNormal;
 
         public:
-            Triangle(int id, const glm::vec3 &a, glm::vec3 b, glm::vec3 c, const gpt::Material &m, int tid = -1,
-                     int tr_id = 1) : Shape(m, id), pointA(a), pointB(b), pointC(c)
+            Triangle(int id, const glm::vec3 &a, const glm::vec3 & b, const glm::vec3 & c, const gpt::Material &m, int tid = -1,
+                     int tr_id = 1) : Shape(m, glm::min(glm::min(a, b), c), glm::max(glm::max(a, b), c), id),
+                                      pointA(a), pointB(b), pointC(c)
             {
                 surfNormal = glm::normalize(glm::cross(pointB - pointA, pointC - pointA));
             }
 
-//            Triangle(const glm::vec3 &pointA);
-
             ~Triangle() override = default;
 
             boost::optional<HitInfo> Hit (const Ray& ray) const override;
-//            boost::optional<float>   ShadowHit(const Ray& ray) const;
 
             auto Normal() const { return surfNormal; }
-
-//            glm::vec3& PointA() { return pointA; }
-//            glm::vec3& PointB() { return pointB; }
-//            glm::vec3& PointC() { return pointC; }
 
             glm::vec3 PointA() const { return pointA; }
             glm::vec3 PointB() const { return pointB; }

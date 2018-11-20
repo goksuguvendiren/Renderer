@@ -7,6 +7,7 @@
 #include "shapes/Shape.hpp"
 #include <vector>
 #include <tinyxml/tinyxml2.h>
+#include <AABB.hpp>
 
 namespace gpt
 {
@@ -23,7 +24,7 @@ namespace gpt
             glm::mat4 inverse_transpose_transf;
 
         public:
-            Sphere(int sid, float rd, glm::vec3 c, const gpt::Material& m) : radius(rd), center(c), Shape(m, sid)
+            Sphere(int sid, float rd, glm::vec3 c, const gpt::Material& m) : radius(rd), center(c), Shape(m, c - rd, c + rd, sid)
             {
                 transformation_matrix       = glm::mat4(1.0f);
                 inverse_transf              = glm::mat4(1.0f);
@@ -37,9 +38,9 @@ namespace gpt
                 inverse_transpose_transf = glm::transpose(inverse_transf);
             }
 
-            ~Sphere() = default;
+            ~Sphere() override = default;
 
-            boost::optional<HitInfo> Hit(const Ray &r) const;
+            boost::optional<HitInfo> Hit(const Ray &r) const override;
 //            boost::optional<float>   ShadowHit(const Ray& ray) const;
         };
     }

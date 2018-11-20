@@ -9,7 +9,7 @@
 #include <sstream>
 #include <tinyxml/tinyxml2.h>
 
-#include <Camera.hpp>
+#include <camera.hpp>
 #include <Transformation.hpp>
 #include <materials/Material.hpp>
 #include <lights/Light.hpp>
@@ -249,7 +249,6 @@ namespace
                 matrix = m * matrix;
             }
 
-            gpt::shapes::Mesh msh{context.GetMaterial(matID), id};
             auto FaceData = child->FirstChildElement("Faces");
             std::istringstream stream { FaceData->GetText() };
             int vertexOffset = 0;
@@ -261,16 +260,15 @@ namespace
                 ;
 
             boost::optional<gpt::shapes::Triangle> tr;
+            std::vector<gpt::shapes::Triangle> faces;
 
             while((tr = GetFace(context, stream, vertexOffset, texCoordOffset, matrix, matID, id, texID)))
             {
                 auto tri = *tr;
-                msh.AddFace(std::move(*tr));
+                faces.push_back(std::move(*tr));
             }
-//        msh.SetShadingMode(mode);
-//        msh.SetArtificial(is_art);
 
-//        msh.BoundingBox();
+            gpt::shapes::Mesh msh{context.GetMaterial(matID), std::move(faces), id};
             meshes.push_back(std::move(msh));
         }
 
@@ -418,13 +416,6 @@ gpt::Scene load_scene(const std::string& filename)
         meta.transformations  = gpt::LoadTransformations(elem);
     }
 
-/*
-    if (auto elem = docscene->FirstChildElement("Textures"))
-    {
-        textures = LoadTextures(elem);
-    }
-*/
-
     if (auto elem = docscene->FirstChildElement("Materials"))
     {
         meta.materials = LoadMaterials(materialContext, elem);
@@ -441,6 +432,8 @@ gpt::Scene load_scene(const std::string& filename)
         for (auto& sph : meta.spheres)   meta.shapes.push_back(&sph);
         for (auto& msh : meta.meshes)    meta.shapes.push_back(&msh);
     }
+
+    meta.aabb = gpt::AABB(meta.shapes);
 
     return Scene(std::move(meta));
 }

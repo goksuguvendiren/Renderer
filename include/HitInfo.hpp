@@ -26,6 +26,7 @@ namespace gpt
                                                                                                           r(ry),
                                                                                                           shape(hitShape)
         {}
+        HitInfo() : param(std::numeric_limits<float>::infinity()) {}
 
         float       Param() const { return param; }
         glm::vec3   Normal() const { return normal; }

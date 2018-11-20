@@ -45,6 +45,8 @@ namespace gpt
 
         std::map<int, std::unique_ptr<gpt::Material>> materials;
         std::vector<std::unique_ptr<gpt::Light>> lights;
+
+        gpt::AABB aabb;
     };
 
     class Camera;
@@ -54,12 +56,16 @@ namespace gpt
 
     public:
         Scene(SceneMeta m) : meta(std::move(m))
-        {}
+        {
+            meta.aabb.Print();
+        }
+
         ~Scene() = default;
         Scene(Scene&& s) = default;
         Scene(const Scene& s) = delete;
         Scene& operator=(const Scene&) = delete;
 
+        boost::optional<HitInfo> HitNaive(const Ray& r) const;
         boost::optional<HitInfo> Hit(const Ray& r) const;
 
 //        void AddCamera(gpt::Camera&& cam) { cameras.push_back(std::move(cam)); }

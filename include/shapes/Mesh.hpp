@@ -16,18 +16,11 @@ namespace gpt
         class Mesh : public Shape
         {
             std::vector<gpt::shapes::Triangle> faces;
-            std::multimap<int, int> vertex_triangle_associtations;
 
         public:
-
-            Mesh(const gpt::Material& m, int id) : Shape(m, id) {}
+            Mesh(const gpt::Material& m, const std::vector<gpt::shapes::Triangle>& fcs, int id) : faces(std::move(fcs)), Shape(m, fcs, id) {}
             Mesh(const Mesh& m) = delete;
             Mesh(Mesh&& m) = default;
-
-            void AddFace(Triangle&& face)
-            {
-                faces.push_back(std::move(face));
-            }
 
             boost::optional<HitInfo> Hit(const Ray &ray) const;
 //            boost::optional<float>   ShadowHit(const Ray& ray) const;

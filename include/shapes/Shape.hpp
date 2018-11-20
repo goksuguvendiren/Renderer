@@ -11,6 +11,7 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <AABB.hpp>
 
 namespace gpt
 {
@@ -39,18 +40,20 @@ namespace gpt
         int id;
         const gpt::Material* material;
 
+    protected:
+        gpt::AABB aabb;
+
     public:
-        explicit Shape(const gpt::Material& m, int id) : material(&m), id(id) {}
+        Shape(const gpt::Material& m, const glm::vec3& mins, const glm::vec3& maxs, int id) : material(&m), id(id), aabb(this, mins, maxs) {}
+        Shape(const gpt::Material& m, const std::vector<gpt::shapes::Triangle>& faces, int id);
         virtual ~Shape() = default;
         virtual boost::optional<HitInfo> Hit(const Ray &ray) const = 0;
-//            virtual boost::optional<float> ShadowHit(const Ray &ray) const = 0;
 
         const gpt::Material& Material() const { return *material; }
-//            virtual bool isArtificial() const = 0;
 
-//            virtual glm::vec3 Min() const = 0;
-//            virtual glm::vec3 Max() const = 0;
-//            virtual glm::vec3 Middle() const = 0;
+        glm::vec3 Min()     const { return aabb.Min(); }
+        glm::vec3 Max()     const { return aabb.Max(); }
+        glm::vec3 Middle()  const { return aabb.Middle(); }
 
         int ID() const { return id; }
     };
