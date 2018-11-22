@@ -99,11 +99,17 @@ gpt::Image SubRender(const gpt::Scene& scene, const gpt::Camera& camera)
         for (unsigned int j = 0; j < camera.ImagePlane().NX(); j++)
         {
             pixelCenter += oneRight;
-            auto pixelLocation = CalculatePixelLocation(camera, pixelCenter);
-            auto ray = gpt::Ray(camera.Position(), pixelLocation - camera.Position(), true);
+            glm::vec3 color = {0, 0, 0};
 
-            glm::vec3 color = Trace(scene, ray, 0, 4);
-            image.at(i, j) = color / 255.f; //glm::min(color, glm::vec3{255.f, 255.f, 255.f}) / 255.f;
+            auto num_samples = 16;
+            for(auto k = 0; k < num_samples; k++)
+            {
+                auto pixelLocation = CalculatePixelLocation(camera, pixelCenter);
+                auto ray = gpt::Ray(camera.Position(), pixelLocation - camera.Position(), true);
+                color += Trace(scene, ray, 0, 4);
+            }
+
+            image.at(i, j) = color / (255.f * num_samples); //glm::min(color, glm::vec3{255.f, 255.f, 255.f}) / 255.f;
         }
 
         UpdateProgress(i / (float)camera.ImagePlane().NY());
@@ -139,8 +145,9 @@ gpt::Image gpt::Render(const gpt::Scene& scene)
         cv::cvtColor(im, im, CV_RGB2BGR);
 
         im /= ++frames;
-        cv::imshow("frame", im);
-        cv::imwrite("frame.png", im);
+        cv::imshow("frame_", im);
+        im *= 255;
+        cv::imwrite("frame" + std::to_string(frames) + ".png", im);
         key = cv::waitKey(10);
 
         windowAlive = key != 27;

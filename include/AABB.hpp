@@ -17,17 +17,13 @@ namespace gpt
 {
     class Box
     {
-        float inf = std::numeric_limits<float>::infinity();
+        constexpr static float inf = std::numeric_limits<float>::infinity();
         glm::vec3 mins = {inf, inf, inf};
         glm::vec3 maxs = {-inf, -inf, -inf};
-        glm::vec3 midd = {0, 0, 0};
 
     public:
         Box() = default;
-        Box(const glm::vec3& minval, const glm::vec3& maxval) : mins(minval), maxs(maxval)
-        {
-            midd = (mins + maxs) / 2.0f;
-        }
+        Box(const glm::vec3& minval, const glm::vec3& maxval) : mins(minval), maxs(maxval) {}
 
         bool Hit(const gpt::Ray &ray) const;
 
@@ -36,36 +32,28 @@ namespace gpt
 
         const glm::vec3& Min()    const { return mins; }
         const glm::vec3& Max()    const { return maxs; }
-        const glm::vec3& Middle() const { return midd; }
-
-        void Update(const glm::vec3 &val);
-
+        glm::vec3 Middle() const { return (mins + maxs) / 2.f; }
     };
 
-    class Shape;
-    namespace shapes
-    {
-        class Triangle;
-    }
+    class Triangle;
 
     class AABB
     {
-        unsigned long num_triangles;
         Box box;
 
         AABB* left;
         AABB* right;
-        const gpt::shapes::Triangle* triangle;
+        const gpt::Triangle* triangle;
 
-        enum class Axis { X, Y, Z};
+        enum class Axis { X, Y, Z };
 
     public:
-        AABB() : num_triangles(), left(nullptr), right(nullptr), triangle(nullptr){}
-        AABB(const std::vector<gpt::shapes::Triangle*>& triangles, Axis axis = Axis::X);
+        AABB() : left(nullptr), right(nullptr), triangle(nullptr){}
+        AABB(const std::vector<gpt::Triangle*>& triangles, Axis axis = Axis::X);
 
         const glm::vec3& Min()    const { return box.Min(); }
         const glm::vec3& Max()    const { return box.Max(); }
-        const glm::vec3& Middle() const { return box.Middle(); }
+        glm::vec3 Middle() const { return box.Middle(); }
 
         void Print(int depth = 0) const;
 

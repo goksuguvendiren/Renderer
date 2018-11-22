@@ -13,39 +13,32 @@
 namespace gpt
 {
     class Scene;
-    namespace shapes
+    class Triangle
     {
-        class Triangle : public Shape
+        int id;
+        glm::vec3 pointA;
+        glm::vec3 pointB;
+        glm::vec3 pointC;
+
+        glm::vec3 surfNormal;
+
+    public:
+        Triangle(int id, const glm::vec3 &a, const glm::vec3 & b, const glm::vec3 & c, const gpt::Material &m, int tid = -1,
+                 int tr_id = 1) : id(id), pointA(a), pointB(b), pointC(c)
         {
-            int id;
-            glm::vec3 pointA;
-            glm::vec3 pointB;
-            glm::vec3 pointC;
+            surfNormal = glm::normalize(glm::cross(pointB - pointA, pointC - pointA));
+        }
 
-            glm::vec3 surfNormal;
+        boost::optional<HitInfo> Hit (const Ray& ray) const;
 
-        public:
-            Triangle(int id, const glm::vec3 &a, const glm::vec3 & b, const glm::vec3 & c, const gpt::Material &m, int tid = -1,
-                     int tr_id = 1) : Shape(m, id), id(id), pointA(a), pointB(b), pointC(c)
-            {
-                surfNormal = glm::normalize(glm::cross(pointB - pointA, pointC - pointA));
-            }
+        auto Normal() const { return surfNormal; }
 
-//            Triangle(Triangle&& rhs) = default; //noexcept : pointA(rhs.pointA), pointB(rhs.pointB), pointC(rhs.pointC), surfNormal(rhs.surfNormal)
-//            {}
-//            ~Triangle() override = default;
+        glm::vec3 PointA() const { return pointA; }
+        glm::vec3 PointB() const { return pointB; }
+        glm::vec3 PointC() const { return pointC; }
 
-            boost::optional<HitInfo> Hit (const Ray& ray) const override;
-
-            auto Normal() const { return surfNormal; }
-
-            glm::vec3 PointA() const { return pointA; }
-            glm::vec3 PointB() const { return pointB; }
-            glm::vec3 PointC() const { return pointC; }
-
-            bool isArtificial() const { return false; }
-        };
-    }
+        bool isArtificial() const { return false; }
+    };
 
 //    static_assert(std::is_nothrow_move_constructible<shapes::Triangle>{}, "Triangle must be nothrow move constructible");
 }

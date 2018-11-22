@@ -15,17 +15,16 @@ namespace gpt
     {
         class Mesh : public Shape
         {
-            std::vector<gpt::shapes::Triangle> faces;
+            std::vector<gpt::Triangle> faces;
             gpt::AABB aabb;
 
         public:
-            Mesh(const gpt::Material& m, std::vector<gpt::shapes::Triangle>&& fcs, int id) : Shape(m, id), faces(std::move(fcs))
+            Mesh(const gpt::Material& m, std::vector<gpt::Triangle>&& fcs, int id) : Shape(m, id), faces(std::move(fcs))
             {
                 std::vector<Triangle*> tris;
                 tris.reserve(faces.size());
                 for (auto& t : faces)
                 {
-                    t.Material(Material());
                     tris.push_back(&t);
                 }
                 aabb = gpt::AABB(tris);

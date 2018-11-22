@@ -40,7 +40,7 @@ namespace gpt
         std::map<std::string, glm::mat4> transformations;
 
         std::vector<gpt::shapes::Sphere> spheres;
-        std::vector<gpt::shapes::Triangle> triangles;
+        std::vector<gpt::Triangle> triangles;
         std::vector<gpt::shapes::Mesh> meshes;
 
         std::vector<gpt::Shape*> shapes;

@@ -21,7 +21,7 @@ inline bool isBackFace(const glm::vec3& surfaceNormal, const glm::vec3& directio
     return glm::dot(surfaceNormal, direction) < 0;
 }
 
-boost::optional<gpt::HitInfo> gpt::shapes::Triangle::Hit(const gpt::Ray& ray) const
+boost::optional<gpt::HitInfo> gpt::Triangle::Hit(const gpt::Ray& ray) const
 {
     glm::vec3 col1 = pointA - pointB;
     glm::vec3 col2 = pointA - pointC;
@@ -51,5 +51,5 @@ boost::optional<gpt::HitInfo> gpt::shapes::Triangle::Hit(const gpt::Ray& ray) co
     auto point = ray.Origin() + param * ray.Direction();
     glm::vec3 normal = glm::normalize(alpha * surfNormal + beta * surfNormal + gamma * surfNormal);
 
-    return gpt::HitInfo(normal, point, ray, this, param);
+    return gpt::HitInfo(normal, point, ray, nullptr, param);
 }

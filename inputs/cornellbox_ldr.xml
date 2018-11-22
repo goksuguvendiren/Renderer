@@ -46,7 +46,7 @@
         <Material id="2" BRDF="1" Type="BRDFMat">
             <AmbientReflectance>1 0 0</AmbientReflectance>
             <DiffuseReflectance>1 0 0</DiffuseReflectance>
-            <SpecularReflectance>1 1 1</SpecularReflectance>
+            <SpecularReflectance>0 0 0</SpecularReflectance>
         </Material>
         <Material id="3" BRDF="1" Type="BRDFMat">
             <AmbientReflectance>0 0 1</AmbientReflectance>
@@ -73,6 +73,11 @@
         </Material>
         <Material id="7" Type="Emitting">
             <Radiance>15000 15000 25000</Radiance>
+        </Material>
+        <Material id="8" BRDF="1" Type="BRDFMat">
+            <AmbientReflectance>1 0 0</AmbientReflectance>
+            <DiffuseReflectance>1 0 0</DiffuseReflectance>
+            <SpecularReflectance>1 1 1</SpecularReflectance>
         </Material>
     </Materials>
 
@@ -143,7 +148,7 @@
             </Faces>
         </Mesh> 
         <Sphere id="7">
-            <Material>2</Material>
+            <Material>8</Material>
             <!--<Material>6</Material>-->
             <Center>9</Center>
             <Radius>4</Radius>

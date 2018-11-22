@@ -52,7 +52,7 @@ namespace
             {"Glass", LoadBasicMaterial }
     };
 
-    boost::optional<gpt::shapes::Triangle> GetFace (const ShapeLoadContext& context, std::istringstream& stream, int vertexOffset, /*int texCoordsOffset,*/
+    boost::optional<gpt::Triangle> GetFace (const ShapeLoadContext& context, std::istringstream& stream, int vertexOffset, /*int texCoordsOffset,*/
                                                    const glm::mat4& matrix, int matID, int index/*, int texID = -1*/)
     {
         int x, y, z;
@@ -83,7 +83,7 @@ namespace
         ind1 = matrix * ind1;
         ind2 = matrix * ind2;
 
-        return gpt::shapes::Triangle(index,
+        return gpt::Triangle(index,
                                      {ind0.x, ind0.y, ind0.z},
                                      {ind1.x, ind1.y, ind1.z},
                                      {ind2.x, ind2.y, ind2.z},
@@ -124,9 +124,9 @@ namespace
         return result;
     }
 
-    std::vector<gpt::shapes::Triangle> LoadTriangle(const ShapeLoadContext& context, tinyxml2::XMLElement* elem)
+    std::vector<gpt::Triangle> LoadTriangle(const ShapeLoadContext& context, tinyxml2::XMLElement* elem)
     {
-        std::vector<gpt::shapes::Triangle> tris;
+        std::vector<gpt::Triangle> tris;
 
         for (auto child = elem->FirstChildElement("Triangle"); child != nullptr; child = child->NextSiblingElement("Triangle")) {
             int id;
@@ -165,7 +165,7 @@ namespace
             ind1 = matrix * ind1;
             ind2 = matrix * ind2;
 
-            tris.emplace_back(gpt::shapes::Triangle(id,
+            tris.emplace_back(gpt::Triangle(id,
                                                     {ind0.x, ind0.y, ind0.z},
                                                     {ind1.x, ind1.y, ind1.z},
                                                     {ind2.x, ind2.y, ind2.z},
@@ -260,8 +260,8 @@ namespace
             if (FaceData->QueryIntAttribute("textureOffset", &texCoordOffset))
                 ;
 
-            std::vector<gpt::shapes::Triangle> faces;
-            boost::optional<gpt::shapes::Triangle> tr;
+            std::vector<gpt::Triangle> faces;
+            boost::optional<gpt::Triangle> tr;
             int index = 0;
             while((tr = GetFace(context, stream, vertexOffset, /*texCoordOffset, */matrix, matID, index++/*, texID*/)))
             {
@@ -428,17 +428,9 @@ gpt::Scene load_scene(const std::string& filename)
         meta.spheres       = LoadSphere(shapeContext, objects);
         meta.meshes        = LoadMesh(shapeContext, objects);
 
-        for (auto& tri : meta.triangles) meta.shapes.push_back(&tri);
         for (auto& sph : meta.spheres)   meta.shapes.push_back(&sph);
         for (auto& msh : meta.meshes)    meta.shapes.push_back(&msh);
     }
-
-//    meta.aabb = gpt::AABB(meta.shapes);
-//
-//    for (auto sh : meta.shapes)
-//    {
-//        sh->aabb.SetShape(sh);
-//    }
 
     return Scene(std::move(meta));
 }

@@ -73,7 +73,7 @@
 //    box.Max(glm::max(left->box.Max(), right->box.Max()));
 //}
 
-std::pair<glm::vec3, glm::vec3> FindLimits(const gpt::shapes::Triangle* triangle)
+std::pair<glm::vec3, glm::vec3> FindLimits(const gpt::Triangle* triangle)
 {
     auto mins = glm::min(glm::min(triangle->PointA(), triangle->PointB()), triangle->PointC());
     auto maxs = glm::max(glm::max(triangle->PointA(), triangle->PointB()), triangle->PointC());
@@ -81,9 +81,8 @@ std::pair<glm::vec3, glm::vec3> FindLimits(const gpt::shapes::Triangle* triangle
     return std::make_pair(mins, maxs);
 }
 
-gpt::AABB::AABB(const std::vector<gpt::shapes::Triangle*>& triangles, Axis axis) : left(nullptr), right(nullptr), triangle(nullptr)
+gpt::AABB::AABB(const std::vector<gpt::Triangle*>& triangles, Axis axis) : left(nullptr), right(nullptr), triangle(nullptr)
 {
-    num_triangles = triangles.size();
     if (triangles.size() == 1)
     {
         triangle = triangles[0];
@@ -94,10 +93,10 @@ gpt::AABB::AABB(const std::vector<gpt::shapes::Triangle*>& triangles, Axis axis)
 
     assert(triangles.size() > 1 && "faces cannot be less than one!");
 
-    std::vector<shapes::Triangle*> leftshapes;  leftshapes.reserve(triangles.size() / 2 + 1);
-    std::vector<shapes::Triangle*> rightshapes; rightshapes.reserve(triangles.size() / 2 + 1);
+    std::vector<Triangle*> leftshapes;  leftshapes.reserve(triangles.size() / 2 + 1);
+    std::vector<Triangle*> rightshapes; rightshapes.reserve(triangles.size() / 2 + 1);
 
-    std::vector<shapes::Triangle*> sortedTriangles = triangles;
+    std::vector<Triangle*> sortedTriangles = triangles;
 //    std::copy(triangles.begin(), triangles.end(), sortedTriangles.begin());
 
     Axis nextAxis;
@@ -141,8 +140,8 @@ gpt::AABB::AABB(const std::vector<gpt::shapes::Triangle*>& triangles, Axis axis)
     auto middling  = sortedTriangles.begin() + (sortedTriangles.size() / 2);
     auto ending    = sortedTriangles.end();
 
-    leftshapes  = std::vector<shapes::Triangle*>(beginning, middling);
-    rightshapes = std::vector<shapes::Triangle*>(middling, ending);
+    leftshapes  = std::vector<Triangle*>(beginning, middling);
+    rightshapes = std::vector<Triangle*>(middling, ending);
 
     assert(triangles.size() == (leftshapes.size() + rightshapes.size()));
 
@@ -159,7 +158,6 @@ void gpt::AABB::Print(int depth) const
     {
         std::cerr << '\t';
     }
-    std::cerr << "num_triangles : " << num_triangles << '\n';
     for (int i = 0; i < depth; ++i)
     {
         std::cerr << '\t';
@@ -255,12 +253,6 @@ boost::optional<gpt::HitInfo> gpt::AABB::Hit(const gpt::Ray& ray) const
     }
 
     return ultimate;
-}
-
-void gpt::Box::Update(const glm::vec3 &val)
-{
-    mins = glm::min(mins, val);
-    maxs = glm::max(maxs, val);
 }
 
 //std::vector<gpt::Shape*> gpt::AABB::to_ptrs(const std::vector<gpt::shapes::Triangle> &triangles)
