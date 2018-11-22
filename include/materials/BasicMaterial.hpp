@@ -24,8 +24,8 @@ namespace gpt
             glm::vec3 specular;
 
         public:
-            BasicMaterial() : ambient({0, 0, 0}), diffuse({0, 0, 0}), specular({0, 0, 0}), Material(false) {}
-            BasicMaterial(const glm::vec3 &amb, const glm::vec3 &dif, const glm::vec3 &spe) : ambient(amb), diffuse(dif), specular(spe), Material(false)
+            BasicMaterial() :  Material(false), ambient({0, 0, 0}), diffuse({0, 0, 0}), specular({0, 0, 0}) {}
+            BasicMaterial(const glm::vec3 &amb, const glm::vec3 &dif, const glm::vec3 &spe) :  Material(false), ambient(amb), diffuse(dif), specular(spe)
             {}
             ~BasicMaterial() override = default;
 

@@ -106,8 +106,6 @@ namespace gpt
 
         inline glm::vec3 GetVertex(std::istringstream& stream)
         {
-            glm::vec3 vert;
-
             float datax;
             float datay;
             float dataz;

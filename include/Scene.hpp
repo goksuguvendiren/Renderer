@@ -10,7 +10,7 @@
 #include <map>
 #include <memory>
 
-#include <shapes/Shape.hpp>
+//#include <shapes/Shape.hpp>
 #include <shapes/Triangle.hpp>
 #include <shapes/Sphere.hpp>
 #include <shapes/Mesh.hpp>
@@ -25,6 +25,8 @@ extern std::map<std::string, MaterialFactory> loaders;
 
 namespace gpt
 {
+    class Shape;
+
     struct SceneMeta
     {
         glm::vec3 backgroundColor;
@@ -46,7 +48,7 @@ namespace gpt
         std::map<int, std::unique_ptr<gpt::Material>> materials;
         std::vector<std::unique_ptr<gpt::Light>> lights;
 
-        gpt::AABB aabb;
+//        gpt::AABB aabb;
     };
 
     class Camera;
@@ -57,7 +59,7 @@ namespace gpt
     public:
         Scene(SceneMeta m) : meta(std::move(m))
         {
-            meta.aabb.Print();
+//            meta.aabb.Print();
         }
 
         ~Scene() = default;

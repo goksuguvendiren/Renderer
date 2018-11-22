@@ -52,8 +52,8 @@ namespace
             {"Glass", LoadBasicMaterial }
     };
 
-    boost::optional<gpt::shapes::Triangle> GetFace(const ShapeLoadContext& context, std::istringstream& stream, int vertexOffset, int texCoordsOffset,
-                                                   const glm::mat4& matrix, int matID, int index, int texID = -1)
+    boost::optional<gpt::shapes::Triangle> GetFace (const ShapeLoadContext& context, std::istringstream& stream, int vertexOffset, /*int texCoordsOffset,*/
+                                                   const glm::mat4& matrix, int matID, int index/*, int texID = -1*/)
     {
         int x, y, z;
 
@@ -67,9 +67,9 @@ namespace
             return boost::none;
         }
 
-        int a = x;
-        int b = y;
-        int c = z;
+//        int a = x;
+//        int b = y;
+//        int c = z;
 
         x += vertexOffset;
         y += vertexOffset;
@@ -140,7 +140,8 @@ namespace
             }
 
             std::vector<std::string> transformations;
-            if(auto trns = child->FirstChildElement("Transformations")){
+            if(auto trns = child->FirstChildElement("Transformations"))
+            {
                 std::istringstream ss {trns->GetText()};
                 transformations = gpt::utils::GetTransformations(ss);
             }
@@ -259,12 +260,11 @@ namespace
             if (FaceData->QueryIntAttribute("textureOffset", &texCoordOffset))
                 ;
 
-            boost::optional<gpt::shapes::Triangle> tr;
             std::vector<gpt::shapes::Triangle> faces;
-
-            while((tr = GetFace(context, stream, vertexOffset, texCoordOffset, matrix, matID, id, texID)))
+            boost::optional<gpt::shapes::Triangle> tr;
+            int index = 0;
+            while((tr = GetFace(context, stream, vertexOffset, /*texCoordOffset, */matrix, matID, index++/*, texID*/)))
             {
-                auto tri = *tr;
                 faces.push_back(std::move(*tr));
             }
 
@@ -326,7 +326,7 @@ namespace
 
         std::string name = element->FirstChildElement("ImageName")->GetText();
 
-        return gpt::Camera(plane, id, position, gaze, up, name, sampleCount, focalDistance, apertureSize);
+        return gpt::Camera(plane, /*id,*/ position, gaze, up, name, sampleCount/*, focalDistance, apertureSize*/);
     }
 }
 
@@ -381,7 +381,7 @@ gpt::Scene load_scene(const std::string& filename)
     gpt::Camera camera;
     if (auto elem = docscene->FirstChildElement("Camera"))
     {
-        camera = std::move(LoadCamera(elem));
+        camera = LoadCamera(elem);
     }
     else
         {
@@ -426,14 +426,19 @@ gpt::Scene load_scene(const std::string& filename)
         ShapeLoadContext shapeContext(meta.vertices, meta.transformations, meta.materials);
         meta.triangles     = LoadTriangle(shapeContext, objects);
         meta.spheres       = LoadSphere(shapeContext, objects);
-        meta.meshes        = std::move(LoadMesh(shapeContext, objects));
+        meta.meshes        = LoadMesh(shapeContext, objects);
 
         for (auto& tri : meta.triangles) meta.shapes.push_back(&tri);
         for (auto& sph : meta.spheres)   meta.shapes.push_back(&sph);
         for (auto& msh : meta.meshes)    meta.shapes.push_back(&msh);
     }
 
-    meta.aabb = gpt::AABB(meta.shapes);
+//    meta.aabb = gpt::AABB(meta.shapes);
+//
+//    for (auto sh : meta.shapes)
+//    {
+//        sh->aabb.SetShape(sh);
+//    }
 
     return Scene(std::move(meta));
 }

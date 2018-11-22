@@ -6,7 +6,8 @@
 
 boost::optional<gpt::HitInfo> gpt::Scene::Hit(const Ray &ray) const
 {
-    return meta.aabb.Hit(ray);
+    return HitNaive(ray);
+//    return meta.aabb.Hit(ray);
 }
 
 boost::optional<gpt::HitInfo> gpt::Scene::HitNaive(const Ray &ray) const

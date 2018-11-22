@@ -21,7 +21,7 @@ namespace gpt
     {
         gpt::ImagePlane imagePlane;
 
-        int id;
+//        int id;
         std::string imageName;
 
         glm::vec3 position;
@@ -29,8 +29,8 @@ namespace gpt
         int sampleCount;
         int divCount;
 
-        int focalDistance;
-        float apertureSize;
+//        int focalDistance;
+//        float apertureSize;
 
         glm::vec3 up;
         glm::vec3 gaze;
@@ -38,16 +38,16 @@ namespace gpt
 
 
     public:
-        Camera(const gpt::ImagePlane& plane = {} , int i = 0, glm::vec3 p = {0, 0, 0},
+        Camera(const gpt::ImagePlane& plane = {} /*, int i = 0*/, glm::vec3 p = {0, 0, 0},
                glm::vec3 g = {0, 1, 0},
                glm::vec3 u = {0, 0, 1},
                std::string name = "",
-               int numSamp = 1,
-               int fd = 1, float as = 0) : imagePlane(plane),
-                                           id(i), imageName(name),
+               int numSamp = 1
+             /*  int fd = 1, float as = 0*/) : imagePlane(plane),
+                                           /*id(i),*/ imageName(std::move(name)),
                                            position(p), sampleCount(numSamp),
-                                           divCount(std::floor(std::sqrt(numSamp))),
-                                           focalDistance(fd), apertureSize(as)
+                                           divCount((int)std::floor(std::sqrt(numSamp)))/*,
+                                           focalDistance(fd), apertureSize(as)*/
         {
             up    = glm::normalize(u);
             gaze  = glm::normalize(g);

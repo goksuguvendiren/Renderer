@@ -14,8 +14,8 @@ glm::vec3 Trace(const gpt::Scene& scene, const gpt::Ray& ray, int recursionDepth
 {
     glm::vec3 color = glm::vec3{0.f, 0.f, 0.f};
 
-//    boost::optional<gpt::HitInfo> hit = scene.HitNaive(ray);
-    boost::optional<gpt::HitInfo> hit = scene.Hit(ray);
+    boost::optional<gpt::HitInfo> hit = scene.HitNaive(ray);
+//    boost::optional<gpt::HitInfo> hit = scene.Hit(ray);
 
     if (hit)
     {
@@ -91,12 +91,12 @@ gpt::Image SubRender(const gpt::Scene& scene, const gpt::Camera& camera)
     pixLocation -= oneDown  * 0.5f;
 
     auto rowBeginning = pixLocation;
-    for (int i = 0; i < camera.ImagePlane().NY(); i++)
+    for (unsigned int i = 0; i < camera.ImagePlane().NY(); i++)
     {
         rowBeginning += oneDown;
         auto pixelCenter = rowBeginning;
 
-        for (int j = 0; j < camera.ImagePlane().NX(); j++)
+        for (unsigned int j = 0; j < camera.ImagePlane().NX(); j++)
         {
             pixelCenter += oneRight;
             auto pixelLocation = CalculatePixelLocation(camera, pixelCenter);

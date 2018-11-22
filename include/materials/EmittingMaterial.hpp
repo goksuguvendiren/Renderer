@@ -23,7 +23,7 @@ namespace materials
 
     public:
         ~EmittingMaterial() override = default;
-        explicit EmittingMaterial(const glm::vec3 &rad) : radiance(rad), Material(true) {}
+        explicit EmittingMaterial(const glm::vec3 &rad) : Material(true), radiance(rad) {}
 
         glm::vec3 CalculateReflectance(const glm::vec3& incoming, const glm::vec3& outgoing, const glm::vec3& normal) const override;
     };

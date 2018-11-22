@@ -6,7 +6,7 @@ find_package(OpenCV REQUIRED)
 add_library(gpt_base src/gpt_base.cpp)
 target_include_directories(gpt_base PUBLIC include)
 target_compile_features(gpt_base PUBLIC cxx_std_17)
-#target_compile_options(gpt_base PUBLIC -fopenmp)
+target_compile_options(gpt_base PUBLIC -Wall -Wextra -pedantic)
 
 set(SOURCE_FILES
     src/main.cpp

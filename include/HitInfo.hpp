@@ -35,6 +35,7 @@ namespace gpt
         const gpt::Ray& GetRay() const { return r; }
 
         const gpt::Shape* Shape() const { return shape; }
+        void Shape(const gpt::Shape* sh) { shape = sh;}
         const gpt::Material&  Material() const;
     };
 }

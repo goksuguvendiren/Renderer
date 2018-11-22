@@ -8,6 +8,7 @@
 #include <tinyxml/tinyxml2.h>
 #include <AABB.hpp>
 #include "shapes/Shape.hpp"
+#include <type_traits>
 
 namespace gpt
 {
@@ -16,6 +17,7 @@ namespace gpt
     {
         class Triangle : public Shape
         {
+            int id;
             glm::vec3 pointA;
             glm::vec3 pointB;
             glm::vec3 pointC;
@@ -24,13 +26,14 @@ namespace gpt
 
         public:
             Triangle(int id, const glm::vec3 &a, const glm::vec3 & b, const glm::vec3 & c, const gpt::Material &m, int tid = -1,
-                     int tr_id = 1) : Shape(m, glm::min(glm::min(a, b), c), glm::max(glm::max(a, b), c), id),
-                                      pointA(a), pointB(b), pointC(c)
+                     int tr_id = 1) : Shape(m, id), id(id), pointA(a), pointB(b), pointC(c)
             {
                 surfNormal = glm::normalize(glm::cross(pointB - pointA, pointC - pointA));
             }
 
-            ~Triangle() override = default;
+//            Triangle(Triangle&& rhs) = default; //noexcept : pointA(rhs.pointA), pointB(rhs.pointB), pointC(rhs.pointC), surfNormal(rhs.surfNormal)
+//            {}
+//            ~Triangle() override = default;
 
             boost::optional<HitInfo> Hit (const Ray& ray) const override;
 
@@ -43,4 +46,6 @@ namespace gpt
             bool isArtificial() const { return false; }
         };
     }
+
+//    static_assert(std::is_nothrow_move_constructible<shapes::Triangle>{}, "Triangle must be nothrow move constructible");
 }

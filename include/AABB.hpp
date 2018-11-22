@@ -8,8 +8,10 @@
 #include <glm/vec3.hpp>
 #include <algorithm>
 #include <vector>
-#include "Ray.hpp"
-#include "HitInfo.hpp"
+#include <Ray.hpp>
+
+#include <HitInfo.hpp>
+#include <shapes/Triangle.hpp>
 
 namespace gpt
 {
@@ -48,25 +50,18 @@ namespace gpt
 
     class AABB
     {
-        int num_shapes;
+        unsigned long num_triangles;
         Box box;
 
         AABB* left;
         AABB* right;
-        gpt::Shape* shape;
+        const gpt::shapes::Triangle* triangle;
 
         enum class Axis { X, Y, Z};
 
-        std::vector<gpt::Shape*> to_ptrs(const std::vector<gpt::shapes::Triangle> &triangles);
-        AABB(const std::vector<Shape*>& shapes, Axis axis);
-
     public:
-        AABB() : left(nullptr), right(nullptr), shape(nullptr), num_shapes() {}
-        AABB(Shape* shape, const glm::vec3& mins, const glm::vec3& maxs);
-        AABB(const std::vector<Shape*>& shapes) : AABB(shapes, Axis::X) {}
-        AABB(const std::vector<gpt::shapes::Triangle>& triangles) : AABB(to_ptrs(triangles), Axis::X) {}
-
-        void Update(const glm::vec3 &val) { box.Update(val); }
+        AABB() : num_triangles(), left(nullptr), right(nullptr), triangle(nullptr){}
+        AABB(const std::vector<gpt::shapes::Triangle*>& triangles, Axis axis = Axis::X);
 
         const glm::vec3& Min()    const { return box.Min(); }
         const glm::vec3& Max()    const { return box.Max(); }
