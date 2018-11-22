@@ -9,14 +9,16 @@
 #include <sstream>
 #include <tinyxml/tinyxml2.h>
 
-#include <camera.hpp>
+#include <Camera.hpp>
 #include <Transformation.hpp>
 #include <materials/Material.hpp>
 #include <lights/Light.hpp>
 #include <materials/EmittingMaterial.hpp>
 #include <materials/BasicMaterial.hpp>
 #include <lights/PointLight.hpp>
+#include <shapes/LightMesh.hpp>
 #include "Utils.hpp"
+#include "shapes/Mesh.hpp"
 
 using namespace gpt;
 
@@ -216,9 +218,10 @@ namespace
         return spheres;
     }
 
-    std::vector<gpt::shapes::Mesh> LoadMesh(const ShapeLoadContext& context, tinyxml2::XMLElement *elem)
+    std::pair<std::vector<gpt::shapes::Mesh>, std::vector<gpt::LightMesh>> LoadMesh(const ShapeLoadContext& context, tinyxml2::XMLElement *elem)
     {
         std::vector<gpt::shapes::Mesh> meshes;
+        std::vector<gpt::LightMesh> light_meshes;
 
         for (auto child = elem->FirstChildElement("Mesh"); child != nullptr; child = child->NextSiblingElement("Mesh"))
         {
@@ -268,11 +271,18 @@ namespace
                 faces.push_back(std::move(*tr));
             }
 
-            gpt::shapes::Mesh msh{context.GetMaterial(matID), std::move(faces), id};
-            meshes.push_back(std::move(msh));
+            if (context.GetMaterial(matID).Emitting())
+            {
+                light_meshes.emplace_back(dynamic_cast<const materials::EmittingMaterial&>(context.GetMaterial(matID)), std::move(faces), id);
+            }
+            else
+            {
+                gpt::shapes::Mesh msh{context.GetMaterial(matID), std::move(faces), id};
+                meshes.push_back(std::move(msh));
+            }
         }
 
-        return meshes;
+        return {std::move(meshes), std::move(light_meshes)};
     }
 
     std::vector<std::unique_ptr<gpt::Light>> LoadLight(tinyxml2::XMLElement *elem)
@@ -389,12 +399,6 @@ gpt::Scene load_scene(const std::string& filename)
         std::abort();
     }
 
-    meta.cameras.push_back(camera);
-    if (auto elem = docscene->FirstChildElement("Lights"))
-    {
-        meta.lights = LoadLight(elem);
-    }
-
 /*
     if (auto elem = docscene->FirstChildElement("BRDFs"))
     {
@@ -426,10 +430,20 @@ gpt::Scene load_scene(const std::string& filename)
         ShapeLoadContext shapeContext(meta.vertices, meta.transformations, meta.materials);
         meta.triangles     = LoadTriangle(shapeContext, objects);
         meta.spheres       = LoadSphere(shapeContext, objects);
-        meta.meshes        = LoadMesh(shapeContext, objects);
 
-        for (auto& sph : meta.spheres)   meta.shapes.push_back(&sph);
-        for (auto& msh : meta.meshes)    meta.shapes.push_back(&msh);
+        auto meshes = LoadMesh(shapeContext, objects);
+        meta.meshes        = std::move(meshes.first);
+        meta.light_meshes  = std::move(meshes.second);
+
+        for (auto& sph : meta.spheres)      meta.shapes.push_back(&sph);
+        for (auto& msh : meta.meshes)       meta.shapes.push_back(&msh);
+        for (auto& msh : meta.light_meshes) meta.shapes.push_back(&msh);
+    }
+
+    meta.cameras.push_back(camera);
+    if (auto elem = docscene->FirstChildElement("Lights"))
+    {
+        meta.lights = LoadLight(elem);
     }
 
     return Scene(std::move(meta));

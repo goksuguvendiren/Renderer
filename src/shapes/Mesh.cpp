@@ -9,7 +9,8 @@
 boost::optional<gpt::HitInfo> gpt::shapes::Mesh::Hit(const Ray &ray) const
 {
     auto hit = aabb.Hit(ray);
-    hit->Shape(this);
+    if (hit)
+        hit->Shape(this);
     return hit;
 }
 

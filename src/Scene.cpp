@@ -4,13 +4,12 @@
 
 #include <Scene.hpp>
 
-boost::optional<gpt::HitInfo> gpt::Scene::Hit(const Ray &ray) const
-{
-    return HitNaive(ray);
-//    return meta.aabb.Hit(ray);
-}
+//boost::optional<gpt::HitInfo> gpt::Scene::Hit(const Ray &ray) const
+//{
+//    return HitNaive(ray);
+//}
 
-boost::optional<gpt::HitInfo> gpt::Scene::HitNaive(const Ray &ray) const
+boost::optional<gpt::HitInfo> gpt::Scene::Hit(const Ray &ray) const
 {
     boost::optional<gpt::HitInfo> min_hit = boost::none;
     for (auto& shape : meta.shapes)

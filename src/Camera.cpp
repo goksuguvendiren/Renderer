@@ -14,16 +14,15 @@ glm::vec3 Trace(const gpt::Scene& scene, const gpt::Ray& ray, int recursionDepth
 {
     glm::vec3 color = glm::vec3{0.f, 0.f, 0.f};
 
-    boost::optional<gpt::HitInfo> hit = scene.HitNaive(ray);
-//    boost::optional<gpt::HitInfo> hit = scene.Hit(ray);
+    boost::optional<gpt::HitInfo> hit = scene.Hit(ray);
 
     if (hit)
     {
-        if (hit->Material().Terminate()) return hit->Material().CalculateReflectance(-ray.Direction(), {}, hit->Normal());
+        if (hit->Material().Emitting()) return hit->Material().CalculateReflectance(-ray.Direction(), {}, hit->Normal());
 
-        for (auto& light : scene.Lights())
+        for (auto& light : scene.LightMeshes())
         {
-            auto lightDirection = light->Direction(hit->Position());
+            auto lightDirection = light.Direction(hit->Position());
             auto normalLightDirection = glm::normalize(lightDirection);
             gpt::Ray shadowRay(hit->Position() + (scene.ShadowRayEpsilon() * hit->Normal()), normalLightDirection);
 
@@ -34,14 +33,16 @@ glm::vec3 Trace(const gpt::Scene& scene, const gpt::Ray& ray, int recursionDepth
                     continue;
             }
 
-            color += hit->Material().CalculateReflectance(-ray.Direction(), lightDirection, hit->Normal()) * light->Intensity(lightDirection);
+            color += hit->Material().CalculateReflectance(-ray.Direction(), lightDirection, hit->Normal()) * light.Intensity(lightDirection);
         }
 
         if (recursionDepth >= maxRecDepth) return color;
 
         auto direction = gpt::utils::sample_hemisphere(hit->Normal());
         gpt::Ray monte_carlo_ray(hit->Position() + (scene.ShadowRayEpsilon() * direction), direction, false);
-        auto sampledColor = Trace(scene, monte_carlo_ray, recursionDepth + 1, maxRecDepth);
+        auto monte_hit = scene.Hit(monte_carlo_ray);
+
+        auto sampledColor = Trace(scene, monte_carlo_ray, recursionDepth + 1, maxRecDepth) ;/// std::max(1.0f, /*monte_hit->Param() * */monte_hit->Param());
 
         return color + hit->Material().CalculateReflectance(-ray.Direction(), direction, hit->Normal()) * sampledColor;
     }
@@ -101,7 +102,7 @@ gpt::Image SubRender(const gpt::Scene& scene, const gpt::Camera& camera)
             pixelCenter += oneRight;
             glm::vec3 color = {0, 0, 0};
 
-            auto num_samples = 16;
+            auto num_samples = 4;
             for(auto k = 0; k < num_samples; k++)
             {
                 auto pixelLocation = CalculatePixelLocation(camera, pixelCenter);

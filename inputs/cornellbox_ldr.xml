@@ -25,10 +25,10 @@
 	</Camera>
 
 	<Lights>
-     <!--    <PointLight id="1">
+        <PointLight id="1">
             <Position>0 4 0</Position>
             <Intensity>15000 15000 25000</Intensity>
-        </PointLight> -->
+        </PointLight>
     </Lights>
 
     <BRDFs>
@@ -72,7 +72,7 @@
             <RefractionIndex>2.0</RefractionIndex>
         </Material>
         <Material id="7" Type="Emitting">
-            <Radiance>15000 15000 25000</Radiance>
+            <Radiance>35000 35000 35000</Radiance>
         </Material>
         <Material id="8" BRDF="1" Type="BRDFMat">
             <AmbientReflectance>1 0 0</AmbientReflectance>

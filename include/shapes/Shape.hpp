@@ -39,9 +39,8 @@ namespace gpt
     class Shape
     {
         int id;
-        const gpt::Material* material;
-
     protected:
+        const gpt::Material* material;
 
     public:
         Shape() = default;

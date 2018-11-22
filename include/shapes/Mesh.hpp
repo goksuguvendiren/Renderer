@@ -7,6 +7,7 @@
 #include <vector>
 #include <map>
 #include "shapes/Shape.hpp"
+#include "lights/Light.hpp"
 #include "Triangle.hpp"
 
 namespace gpt
@@ -15,6 +16,7 @@ namespace gpt
     {
         class Mesh : public Shape
         {
+        protected:
             std::vector<gpt::Triangle> faces;
             gpt::AABB aabb;
 
@@ -39,6 +41,7 @@ namespace gpt
             glm::vec3 Max()     const { return aabb.Max(); }
             glm::vec3 Middle()  const { return aabb.Middle(); }
 
+            bool Emitting() const { return material->Emitting(); }
             const auto& Faces() const { return faces; }
         };
     }

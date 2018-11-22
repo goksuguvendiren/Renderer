@@ -15,17 +15,17 @@ namespace gpt
 {
     class Scene;
 
-namespace materials
-{
-    class EmittingMaterial : public Material
+    namespace materials
     {
-        glm::vec3 radiance;
+        class EmittingMaterial : public Material
+        {
+            glm::vec3 radiance;
 
-    public:
-        ~EmittingMaterial() override = default;
-        explicit EmittingMaterial(const glm::vec3 &rad) : Material(true), radiance(rad) {}
+        public:
+            ~EmittingMaterial() override = default;
+            explicit EmittingMaterial(const glm::vec3 &rad) : Material(true), radiance(rad) {}
 
-        glm::vec3 CalculateReflectance(const glm::vec3& incoming, const glm::vec3& outgoing, const glm::vec3& normal) const override;
-    };
-}
+            glm::vec3 CalculateReflectance(const glm::vec3& incoming, const glm::vec3& outgoing, const glm::vec3& normal) const override;
+        };
+    }
 }
