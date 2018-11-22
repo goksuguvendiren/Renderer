@@ -11,7 +11,7 @@ static_assert(sizeof(glm::vec3) == sizeof(float) * 3, "glm::vec3's size is not 3
 
 int main()
 {
-    const gpt::Scene scene = load_scene("/Users/goksu/Documents/Renderer/inputs/cornellbox_ldr.xml");
+    const gpt::Scene scene = load_scene("../inputs/cornellbox_ldr.xml");
 
     auto image = gpt::Render(scene);
     cv::Mat im = cv::Mat(image.Height(), image.Width(), CV_32FC3, (void*)&(image.Data()[0].x));
